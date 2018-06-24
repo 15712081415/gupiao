@@ -96,7 +96,7 @@ Array.prototype.min = function () {
   let curr = 0;
   let MaxNumber = [];
   let config = {
-    volume: 5, // 量比
+    volume: 4, // 量比
     // boll: 0.8, // 布林值反转趋势
     BF: 1, // 反转趋势
     bollCurr: 5 // 布林线趋势
@@ -138,14 +138,14 @@ Array.prototype.min = function () {
     let item = fileArr[index];    
     if (index == len) {
         if (!MaxNumber.length) return;
-        let code = MaxNumber[MaxNumber.length - 1][0].code;
+        emailGet(null, '股票评分', MaxNumber.srotGrade());
+        let code = MaxNumber[0][0].code;
         let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
         axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status":1}}).then(res=>{
             console.log('修改状态成功')
         }).catch((err) => {
             console.log('edit', err)
         })
-        emailGet(null, '股票评分', MaxNumber.srotGrade())
         console.log('发送全仓邮件');
         emailGet(null, '[' + code + ']:全仓', nubMon);
         return
@@ -353,7 +353,7 @@ Array.prototype.min = function () {
             if (i < 2 && flag == 0) {
                 if (item.mean5 > item.mean10) {
                     if (i == 0 && item.js > item.mean5 && item.ks < item.mean10) {
-                        nub += config.BF * 3;
+                        nub += config.BF * 6;
                         if (item.mean10 > item.mean20 && item.ks < item.mean20) {
                             nub += config.BF * 3;
                         }
@@ -399,7 +399,7 @@ Array.prototype.min = function () {
           let vol = k_link[0+1].volume / k_link[0].volume;
           numner += (vol > 3 ? 3 : vol) * config.volume;
           consoles.log('volumeFun >>> 量比1', numner);
-          numner += k_link[0+1].status > 0 ? config.volume / 2 : 0;
+          numner += k_link[0+1].status > 0 ? config.volume * 0.8 : 0;
           consoles.log('volumeFun >>> 量比2', numner);
           let volume = true;
           for (let i=1;k_link[i] && k_link[i].volume && i<k_link.length;i++) {
