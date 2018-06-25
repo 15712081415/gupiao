@@ -36,7 +36,7 @@ module.exports = function (code, flag, $) {
         if (temp4 == 0) {
             return
         }
-        if (!$.openVal[code]) $.openVal[code] = temp2;
+        if (!$.openVal[code]) $.openVal[code] = temp3;
         let nub = temp4;
         if ($.Sday[code]) {
           $.Sday[code].push(nub);
@@ -83,8 +83,8 @@ module.exports = function (code, flag, $) {
           let min = $.Sday[code].min();
           let currDay = $.Sday[code][0];
           let item = $.codeData[code];
-          let maxSum = $.openVal[code] * 1.01;
-          let minSum = $.openVal[code] * -1.01;
+          let maxSum = $.openVal[code] * 1.02;
+          let minSum = $.openVal[code] * -1.02;
           let isMax = $.openVal[code] * 0.004 < 0.03? 0.03 : $.openVal[code] * 0.004;
           let isMin = $.openVal[code] * 0.004 < 0.03? 0.03 : $.openVal[code] * 0.004;
           console.log(newest,maxSum,isMax,minSum, isMin, 'max：', newest > maxSum, $.Sday[code].max().nub == $.Sday[code].length - 1, 'min:', newest < isMin, $.Sday[code].min().nub == $.Sday[code].length - 1);

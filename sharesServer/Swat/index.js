@@ -28,6 +28,7 @@ let $ = {
     MaxNumber: [],
     deal: {},
     openVal: {},
+    status: true,
     flagCode: {}
 }
 // 初始化
@@ -49,6 +50,7 @@ $.schedule.scheduleJob('0 55 8 * * 1-5', function () {
     $.MaxNumber = []; // 未使用
     $.deal = {}; // 当天买卖次数
     $.openVal = {}; // 开盘价
+    $.status = true; // 是否开始统计
     $.flagCode = {}; // 清仓标识
 });
 function loading() {
@@ -91,6 +93,7 @@ $.schedule.scheduleJob('* * 9-15 * * 1-5', function () {
     $.codeIDarr1.length > 0 || $.codeIDarr2.length > 0 || $.codeIDarr3.length > 0 ? gainCode() : loading();
 });
 function gainCode() {
+    if (!$.status) return;
     let time = new Date()
     if ((time.getHours() > 9 || time.getMinutes() > 30) && time.getSeconds() % 5 == 0) {
         console.log('time ->', time.getMinutes(), time.getSeconds())
@@ -119,6 +122,7 @@ function gainCode() {
 // 发送最新股票评分
 $.schedule.scheduleJob('5 53 14 * * 1-5', function () {
     console.log('发送最新股票评分');
+    $.status = false; // 停止统计
     $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade?type=1');
     $.codeIDarr1.length && longLine.endEmail($);
     $.codeIDarr2.length && stup.endEmail($);
