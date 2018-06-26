@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+	<head>
+		<title>viewHTML</title>
+		<script src="//cdn.bootcss.com/socket.io/1.7.3/socket.io.js"></script>
+		<script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
+		<style>
+			body{
+				margin: 10px auto;
+			}
+
+			/* -------------------------------------- */
+
+			ol{
+				counter-reset: li;
+				list-style: none;
+				*list-style: decimal;
+				font: 15px 'trebuchet MS', 'lucida sans';
+				padding: 0;
+				margin-bottom: 4em;
+				text-shadow: 0 1px 0 rgba(255,255,255,.5);
+			}
+
+			ol ol{
+				margin: 0 0 0 2em;
+			}
+
+			/* -------------------------------------- */			
+
+			.rounded-list a{
+				font-family: 'arial';
+				position: relative;
+				display: block;
+				padding: .4em .4em .4em 2em;
+				*padding: .4em;
+				margin: .5em 0;
+				background: #ddd;
+				color: #444;
+				text-decoration: none;
+				-moz-border-radius: .3em;
+				-webkit-border-radius: .3em;
+				border-radius: .3em;
+				-webkit-transition: all .3s ease-out;
+				-moz-transition: all .3s ease-out;
+				-ms-transition: all .3s ease-out;
+				-o-transition: all .3s ease-out;
+				transition: all .3s ease-out;	
+			}
+
+			.rounded-list a:hover{
+				background: #eee;
+			}
+
+			.rounded-list a:hover:before{
+				-moz-transform: rotate(360deg);
+			  	-webkit-transform: rotate(360deg);
+			    -moz-transform: rotate(360deg);
+			    -ms-transform: rotate(360deg);
+			    -o-transform: rotate(360deg);
+			    transform: rotate(360deg);	
+			}
+
+			.rounded-list a:before{
+				/* content: counter(li); */
+				content:attr(data-index);
+				position: absolute;	
+				left: -1.3em;
+				top: 50%;
+				margin-top: -1.3em;
+				background: #87ceeb;
+				height: 2em;
+				width: 2em;
+				line-height: 2em;
+				border: .3em solid #fff;
+				text-align: center;
+				font-weight: bold;
+				-moz-border-radius: 2em;
+				-webkit-border-radius: 2em;
+				border-radius: 2em;
+				-webkit-transition: all .3s ease-out;
+				-moz-transition: all .3s ease-out;
+				-ms-transition: all .3s ease-out;
+				-o-transition: all .3s ease-out;
+				transition: all .3s ease-out;
+			}
+			.rounded-list a.end {
+				background: #f6f6f6;
+				color: #555;
+			}
+			/* -------------------------------------- */
+			.main {
+				margin: 0 auto;
+				padding: 0 20px;
+				border: 1px solid #CECECE;
+				background: #EAEAEA;
+				display: flex;
+				align-items:stretch;
+				min-width: 500px;
+			}
+			.main .left{
+				flex-shrink: 1;
+				flex-grow: 1;
+				padding: 0 20px;
+				max-height: 300px;
+				overflow: auto;
+			}
+			.main .right{
+				flex-shrink: 2;
+				flex-grow: 2;
+				border-left: 1px solid #CECECE;
+				text-align: left;
+			}
+			.main .right h2{
+				margin-left: 20px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="main">
+			<div class="left">
+				<ol class="rounded-list" id="myOl">
+				</ol>
+			</div>
+			<div class="right">
+				<h2 id="content">代码：</h2>
+			</div>
+		</div>
+		<!-- <a onclick="test()">测试</a> -->
+	</body>
+	<script type="text/javascript">
+		var socket = io.connect();
+		socket.on('news',function(data){
+				console.log(data);
+				var dom = $('#myOl');
+				var length = $('#myOl li').length + 1;
+				dom.prepend('<li><a href="#" data-index="'+ length +'" onclick="clickFun(this, \''+ data.content +'\')"><b>'+ data.title +'</b></a></li>')
+				socket.send('消息已接收到');
+		});
+		socket.emit('connectiion', {}, function (res) {
+			console.log(res);
+		});
+		function clickFun(dom, str) {
+			dom.className="end";
+			$('#content').html(str);
+		}
+		function test() {
+			console.log(111)
+			socket.emit('content', {}, function (res) {
+				console.log(res);
+			});
+			console.log(222)
+		}
+	</script>
+</html>

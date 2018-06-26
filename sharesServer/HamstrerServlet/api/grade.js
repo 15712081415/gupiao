@@ -107,18 +107,17 @@ Array.prototype.min = function () {
             return (item.codeID[2] == 6 || item.codeID[2] == 3 || item.codeID[2] == 0) && item.codeID[0] == 's';
         })
     }
-    init(0, fileArr.length);
-    res.send('稍后会发送邮件给您！');
+    init(res);
   })
   
-  async function init () {
+  async function init (resSend) {
     let arr = fileArr.map(item => item.codeID);
     for(let i = 0;i<arr.length; i+=200) {
       let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
       await api(codeArr);
       console.log('init', i, arr.length);
     }
-    getHtml(0, arr.length);
+    getHtml(0, arr.length, resSend);
   }
   function api(codeID) {
     return axios.get('http://hq.sinajs.cn/list=' + codeID, {
@@ -133,7 +132,7 @@ Array.prototype.min = function () {
       })
     })
   }
-  function getHtml(index, len){
+  function getHtml(index, len, resSend){
     console.log('indexKS', index, len);
     let item = fileArr[index];    
     if (index == len) {
@@ -147,13 +146,14 @@ Array.prototype.min = function () {
             console.log('edit', err)
         })
         console.log('发送全仓邮件');
+        resSend.send(code.substring(2, 8));
         emailGet(null, '[' + code + ']:全仓', nubMon);
         return
     }
     let data = content[item.codeID];
     if (!(fileArr[index] && fileArr[index]['K-Lin'] && data)) {
         if (index < (len - 1)) {
-            getHtml(index + 1, len)
+            getHtml(index + 1, len, resSend)
         }
         return consoles.log('not K-Lin');
     }
@@ -190,12 +190,12 @@ Array.prototype.min = function () {
     ]
     if (temp1.indexOf('退市') > -1 || temp1.indexOf('ST') > -1) {
         consoles.log('劣质股！');
-        getHtml(index + 1, len);
+        getHtml(index + 1, len, resSend);
         return;
     }
     if (Number(temp4) == 0 || (Number(temp4) - Number(temp3)) / Number(temp3) > 0.05) {
         consoles.log('max 5%');
-        getHtml(index + 1, len);
+        getHtml(index + 1, len, resSend);
         return;
     }
     let timeRQ = temp7;
@@ -236,7 +236,7 @@ Array.prototype.min = function () {
     });
     consoles.log('开始scoreNumber计算分数');
     scoreNumber(k_link, item.codeID);
-    getHtml(index + 1, len);
+    getHtml(index + 1, len, resSend);
   }
   function scoreNumber(k_link, code) {
     consoles.log('scoreNumber');    

@@ -58,5 +58,23 @@ module.exports = {
     let d = myDate.getDate();
     d = d < 10 ? ('0' + d) : d;
     return y + '-' + m + '-' + d;
+  },
+  // 指令页面
+  viewHTML: function () {
+    let http = require('http');
+    let sio = require('socket.io');
+    let fs = require('fs');
+    let server = http.createServer(function(req,res){
+        res.writeHead(200,
+            {
+                'Content-type':'text/html'
+            }
+        );
+        res.end(fs.readFileSync('./Swat/index.html'));
+    });
+    
+    server.listen(4000);
+    let io = sio.listen(server);
+    return io
   }
 }
