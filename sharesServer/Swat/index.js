@@ -93,20 +93,20 @@ function loading() {
 // 开始记录今天的数据
 let ruleCurr = new $.schedule.RecurrenceRule();
 ruleCurr.dayOfWeek = [1, 2, 3, 4, 5]; // 周
-ruleCurr.hour = [9, 10, 11, 12, 13, 14, 15]; // 时
+$.status && (ruleCurr.hour = [9, 10, 11, 12, 13, 14, 15]); // 时
 ruleCurr.second = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]; // 秒
 $.schedule.scheduleJob(ruleCurr, function () {
     $.codeIDarr1.length > 0 || $.codeIDarr2.length > 0 || $.codeIDarr3.length > 0 ? gainCode() : loading();
 });
 
 function gainCode() {
-    if (!$.status) return;
-    let time = new Date();
-    console.log('time ->', time.getMinutes(), time.getSeconds());
-    // 测试用
+     // 测试用
     // $.io.sockets.emit('news',{content: '代码：888888', title: '全仓'});
     // $.io.sockets.emit('news',{content: '代码：888888', title: '清仓'});
     // $.io.sockets.emit('news',{content: '代码：888888', title: '回降中'});
+    if (!$.status) return;
+    let time = new Date();
+    console.log('time ->', time.getMinutes(), time.getSeconds());
     time.getMinutes() % 5 == 0 && time.getSeconds() < 5 && minuteK($);
     if (time.getHours() < 15) {
         for (let i = 0; i < $.codeIDarr1.length; i++) {

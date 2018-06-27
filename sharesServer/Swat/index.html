@@ -1,7 +1,8 @@
-<!doctype html>
+﻿<!doctype html>
 <html>
 	<head>
 		<title>viewHTML</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<script src="//cdn.bootcss.com/socket.io/1.7.3/socket.io.js"></script>
 		<script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
 		<style>
@@ -92,7 +93,7 @@
 				margin: 0 auto;
 				padding: 0 20px;
 				border: 1px solid #CECECE;
-				background: #EAEAEA;
+				/*background: #EAEAEA;*/
 				display: flex;
 				align-items:stretch;
 				min-width: 500px;
@@ -112,6 +113,8 @@
 			}
 			.main .right h2{
 				margin-left: 20px;
+				height: 60px;
+				line-height: 60px;
 			}
 		</style>
 	</head>
@@ -125,7 +128,7 @@
 				<h2 id="content">代码：</h2>
 			</div>
 		</div>
-		<!-- <a onclick="test()">测试</a> -->
+		<a onclick="test()">测试</a>
 	</body>
 	<script type="text/javascript">
 		var socket = io.connect();
@@ -144,11 +147,14 @@
 			$('#content').html(str);
 		}
 		function test() {
-			console.log(111)
-			socket.emit('content', {}, function (res) {
-				console.log(res);
-			});
-			console.log(222)
+			var dom = $('#myOl');
+				var length = $('#myOl li').length + 1,
+					str = '';
+				str = ['<li><a href="#" data-index="'+ length +'" onclick="clickFun(this, \'代码：300059\')"><b>全仓</b></a></li>',
+					'<li><a href="#" data-index="'+ (length+1) +'" onclick="clickFun(this, \'代码：300059\')"><b>清仓</b></a></li>',
+					'<li><a href="#" data-index="'+ (length+2) +'" onclick="clickFun(this, \'代码：300059\')"><b>回降中</b></a></li>'
+				].join('');
+				dom.html(str);
 		}
 	</script>
 </html>
