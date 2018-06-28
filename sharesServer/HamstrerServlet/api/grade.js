@@ -96,12 +96,12 @@ Array.prototype.min = function () {
   let curr = 0;
   let MaxNumber = [];
   let config = {
-    volume: 4, // 量比
-    // boll: 0.8, // 布林值反转趋势
+    volume: 6, // 量比
+    boll: 0.8, // 布林值反转趋势
     BF: 1, // 反转趋势
     bollCurr: 5 // 布林线趋势
   };
-  axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sz300158"} : {}).then(function(d) {
+  axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sh601002"} : {}).then(function(d) {
     if (d.data) {
         fileArr = d.data.filter(item => {
             return (item.codeID[2] == 6 || item.codeID[2] == 3 || item.codeID[2] == 0) && item.codeID[0] == 's';
@@ -251,8 +251,8 @@ Array.prototype.min = function () {
         consoles.log('bollCurr  ------>',code, score);
         score.numner += volumeFun(k_link);
         consoles.log('volumeFun  ------>',code, score);
-        score.numner += BF(k_link); // 趋势
-        consoles.log('BF  ------>',code, score);
+        // score.numner += BF(k_link); // 趋势
+        // consoles.log('BF  ------>',code, score);
         let name = parseInt(score.numner);
         if (name >= 0) {
             if (!MaxNumber[name]) MaxNumber[name] = [];
@@ -346,8 +346,9 @@ Array.prototype.min = function () {
     let flag = 0;
     let arr = [];
     function forEach (i = 0) {
-        if (flag == 3) return;
+        consoles.log('BF forEach ---->', nub);
         let item = k_link[i];
+        if (!item || flag == 3) return;
         arr.push(item.js);
         if (item.mean5 && item.mean10) {
             if (i < 2 && flag == 0) {
@@ -378,16 +379,17 @@ Array.prototype.min = function () {
         }
         forEach (i + 1)
     }
+    forEach(0);
     consoles.log('BF ---->', nub);
     return nub
   }
   // 价格区间记分
   function bollCurr(k_link) {
     consoles.log('bollCurr ---->', k_link[0].boll);
-    if (k_link[0].boll.MB < k_link[0].js) return 0;
+    if ((k_link[0].boll.MB + k_link[0].boll.DN) / 2 < k_link[0].js) return 0;
     let nub = k_link.length ? (k_link[0].boll.UP / k_link[0].js * config.bollCurr) || 0 : 0;
     if (k_link[0] && k_link[1] && k_link[0].js > k_link[1].max) {
-        nub += (k_link[0].js / k_link[1].max * config.bollCurr) || 0;
+        nub += (k_link[0].js / k_link[1].max * config.bollCurr * 0.5) || 0;
     }
     return nub;
   }
@@ -398,6 +400,7 @@ Array.prototype.min = function () {
       if (k_link[0].volume && k_link[0+1].volume && k_link[0+1].volume > k_link[0].volume && k_link[0].status > 0) {
           let vol = k_link[0+1].volume / k_link[0].volume;
           numner += (vol > 3 ? 3 : vol) * config.volume;
+        //   numner += vol * config.volume;
           consoles.log('volumeFun >>> 量比1', numner);
           numner += k_link[0+1].status > 0 ? config.volume * 0.8 : 0;
           consoles.log('volumeFun >>> 量比2', numner);

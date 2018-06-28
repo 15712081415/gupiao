@@ -121,7 +121,7 @@ module.exports = function (code, flag, $) {
           }
           function mathNumber(val) {
               if (val == 1) {
-                return $.openVal[code] * 0.005
+                return $.openVal[code] * 0.01
               } else if (val == 2) {
                 return $.openVal[code] * 0.003
               } else if (val == 3) {
@@ -168,6 +168,7 @@ module.exports.endEmail = function ($) {
             //     emailGet(toEmail, $.codeData[code].name + '[' + code + ']:回升中', '当前价：' + $.Sday[code][$.Sday[code].length - 1].toFixed(2) + nubMon);
             //     $.soaringMin[code] = 0;
             // }
+            $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
             emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
             $.https.post('http://localhost:8089/api/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status":0}});
         }
