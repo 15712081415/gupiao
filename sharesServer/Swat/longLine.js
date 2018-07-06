@@ -34,9 +34,9 @@ module.exports = function (code, flag, $) {
         data[18] || 0
         ]
         if (temp4 == 0) {
+            console.log('temp4 == 0', code)
             return
         }
-        if (!$.openVal[code]) $.openVal[code] = temp3;
         let nub = temp4;
         if ($.Sday[code]) {
           $.Sday[code].push(nub);
@@ -63,11 +63,11 @@ module.exports = function (code, flag, $) {
         }
         let stop = ((temp5 - temp3) / temp3) || 0;
         console.log(code + '检测行情', parseInt((temp4 - temp3) / temp3 * 10000) / 100 + '%', stop);
-        console.log(code + 'if',(temp4 - temp3) / temp3, -0.025 + (stop < 2 && stop > 1 ? 1 : stop));
+        if (!$.openVal[code]) $.openVal[code] = {v:temp3, s:parseInt((temp4 - temp3) / temp3 * 10000) / 100};        
         if ((temp4 - temp3) / temp3 < -0.025 + (stop < 2 && stop > 1 ? 1 : stop)) {
             if (!$.flagCode[code]) {
                 $.flagCode[code] = true;
-                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ parseInt((temp4 - temp3) / temp3 * 10000) / 100 + '%' +'%</p>';
+                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ parseInt((temp4 - temp3) / temp3 * 10000) / 100 +'%</p>';
                 $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
                 emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
             }
@@ -84,10 +84,10 @@ module.exports = function (code, flag, $) {
           let min = $.Sday[code].min();
           let currDay = $.Sday[code][0];
           let item = $.codeData[code];
-          let maxSum = $.openVal[code] * 1.02;
-          let minSum = $.openVal[code] * -1.02;
-          let isMax = $.openVal[code] * 0.004 < 0.03? 0.03 : $.openVal[code] * 0.004;
-          let isMin = $.openVal[code] * 0.004 < 0.03? 0.03 : $.openVal[code] * 0.004;
+          let maxSum = $.openVal[code].v * 1.05;
+          let minSum = $.openVal[code].v * -1.02;
+          let isMax = $.openVal[code].v * 0.004 < 0.03? 0.03 : $.openVal[code].v * 0.004;
+          let isMin = $.openVal[code].v * 0.004 < 0.03? 0.03 : $.openVal[code].v * 0.004;
           console.log(newest,maxSum,isMax,minSum, isMin, 'max：', newest > maxSum, $.Sday[code].max().nub == $.Sday[code].length - 1, 'min:', newest < isMin, $.Sday[code].min().nub == $.Sday[code].length - 1);
           $.maxCurr[code].arr[0] || ($.maxCurr[code].arr[0] = maxSum);
           $.minCurr[code].arr[0] || ($.minCurr[code].arr[0] = minSum);
@@ -100,8 +100,18 @@ module.exports = function (code, flag, $) {
                   $.minCurr[code].nub = 0;
               } else if ($.soaringMax[code] == 1 && newest < (max.max - isMax)) {
                   $.deal[item.codeID] && $.deal[item.codeID].up++;
-                  $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: ($.maxCurr[code].arr.length >= 3 ||  $.openVal[code] * 1.05 < currDay? '清仓' : '回降中')});
-                  emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + ($.maxCurr[code].arr.length >= 3 ||  $.openVal[code] * 1.05 < currDay? '清仓' : '回降中'), '当前价：' + $.Sday[code][lengths].toFixed(2) + '当日平均值：' + mean.toFixed(2) + ';当日最高：' + max.max.toFixed(2) + ';上行：' + maxSum.toFixed(2) + nubMon);
+                  let sale = '';
+                  if ($.maxCurr[code].arr.length >= 3 ||  $.openVal[code].v * 1.075 < currDay) {
+                    sale = '清仓'
+                  } else if ($.maxCurr[code].arr.length == 1) {
+                    sale = '清叁'
+                  } else if ($.maxCurr[code].arr.length == 2) {
+                    sale = '清贰'
+                  } else {
+                    sale = '清仓'
+                  }
+                  $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sale});
+                  emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + sale, '当前价：' + $.Sday[code][lengths].toFixed(2) + '当日平均值：' + mean.toFixed(2) + ';当日最高：' + max.max.toFixed(2) + ';上行：' + maxSum.toFixed(2) + nubMon);
                   $.soaringMax[code] = 0;
                   $.maxCurr[code].nub = $.maxCurr[code].nub + mathNumber($.maxCurr[code].arr.length);
                   $.maxCurr[code].arr.push(max.max);
@@ -121,11 +131,11 @@ module.exports = function (code, flag, $) {
           }
           function mathNumber(val) {
               if (val == 1) {
-                return $.openVal[code] * 0.01
+                return $.openVal[code].v * 0.01
               } else if (val == 2) {
-                return $.openVal[code] * 0.003
+                return $.openVal[code].v * 0.003
               } else if (val == 3) {
-                return $.openVal[code] * 0.001
+                return $.openVal[code].v * 0.001
               } else {
                 return 0.01
               }
@@ -156,21 +166,23 @@ module.exports.endEmail = function ($) {
     for (let item in $.codeIDarr1) {
         if ($.codeIDarr1[item].codeID) {
             let code = $.codeIDarr1[item].codeID;
-            let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
-            let toEmail = null;
-            // if ($.soaringMax[code] == 1) {
-            //     $.deal[code] && $.deal[code].up++
-            //     emailGet(toEmail, $.codeData[code].name + '[' + code + ']:回降中', '当前价：' + $.Sday[code][$.Sday[code].length - 1].toFixed(2) + nubMon);
-            //     $.soaringMax[code] = 0;
-            // }
-            // if ($.soaringMin[code] == 1) {
-            //     $.deal[code] && $.deal[code].dow++
-            //     emailGet(toEmail, $.codeData[code].name + '[' + code + ']:回升中', '当前价：' + $.Sday[code][$.Sday[code].length - 1].toFixed(2) + nubMon);
-            //     $.soaringMin[code] = 0;
-            // }
-            $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
-            emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
-            $.https.post('http://localhost:8089/api/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status":0}});
+            if (!$.openVal[code] || $.openVal[code].v < 9.9) {
+                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
+                let toEmail = null;
+                // if ($.soaringMax[code] == 1) {
+                //     $.deal[code] && $.deal[code].up++
+                //     emailGet(toEmail, $.codeData[code].name + '[' + code + ']:回降中', '当前价：' + $.Sday[code][$.Sday[code].length - 1].toFixed(2) + nubMon);
+                //     $.soaringMax[code] = 0;
+                // }
+                // if ($.soaringMin[code] == 1) {
+                //     $.deal[code] && $.deal[code].dow++
+                //     emailGet(toEmail, $.codeData[code].name + '[' + code + ']:回升中', '当前价：' + $.Sday[code][$.Sday[code].length - 1].toFixed(2) + nubMon);
+                //     $.soaringMin[code] = 0;
+                // }
+                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
+                emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
+                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status":0}});
+            }
         }
     }
 }

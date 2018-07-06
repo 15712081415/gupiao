@@ -52,10 +52,12 @@ Array.prototype.min = function () {
     let _this = this
     let arr = _this.reverse();
     let str = '分数排名：<br />';
+    let val = [];
     _this = _this.filter(item => { return !!item});
     _this.length = 5;
     _this.forEach((item, index) => {
         if (item) {
+            if (index < 2) val.push(item);
             index++;
             str += '<p style="font-weight: 100;"><b style="color:#4093c6">'+ index +'. </b>';
             item = item.sort((it1, it2) => {
@@ -69,7 +71,7 @@ Array.prototype.min = function () {
             str += '<p />'
         }
     })
-    // consoles.log(str);
+    this.val = val;
     return str;
   }
   // 格式化日期
@@ -97,7 +99,6 @@ Array.prototype.min = function () {
   let MaxNumber = [];
   let config = {
     volume: 6, // 量比
-    boll: 0.8, // 布林值反转趋势
     BF: 1, // 反转趋势
     bollCurr: 5 // 布林线趋势
   };
@@ -140,13 +141,9 @@ Array.prototype.min = function () {
         emailGet(null, '股票评分', MaxNumber.srotGrade());
         let code = MaxNumber[0][0].code;
         let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
-        axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status":1}}).then(res=>{
-            console.log('修改状态成功')
-        }).catch((err) => {
-            console.log('edit', err)
-        })
+        let arr = MaxNumber.val[0].concat(MaxNumber.val[1]);
+        resSend.send(JSON.stringify(arr.slice(0,2)));
         console.log('发送全仓邮件');
-        resSend.send(code.substring(2, 8));
         emailGet(null, '[' + code + ']:全仓', nubMon);
         return
     }
@@ -245,8 +242,6 @@ Array.prototype.min = function () {
     // k_link.splice(0,1); // 测试代码去掉 n 数据
     if (k_link.length > 2) {
         consoles.log('k_link', k_link[0]);
-        // scoreFun(0, k_link.length, k_link);
-        // consoles.log('scoreFun ------>',code, score);
         score.numner += bollCurr(k_link);
         consoles.log('bollCurr  ------>',code, score);
         score.numner += volumeFun(k_link);
@@ -254,52 +249,9 @@ Array.prototype.min = function () {
         // score.numner += BF(k_link); // 趋势
         // consoles.log('BF  ------>',code, score);
         let name = parseInt(score.numner);
-        if (name >= 0) {
+        if (name > 0) {
             if (!MaxNumber[name]) MaxNumber[name] = [];
             MaxNumber[name].push({code: code, nub: score.numner});
-        }
-    }
-    function scoreFun (curr, len, k_link) {
-        if (curr < len - 1 && k_link[curr].boll && k_link[curr + 1].boll) {
-            let MB1 = k_link[curr].boll.MB; // 当天布林值中线
-            let MB2 = k_link[curr+1].boll.MB; // 昨天布林值中线
-            let MD1 = k_link[curr].boll.MD; // 当天布林值标准差
-            let MD2 = k_link[curr+1].boll.MD; // 昨天布林值标准差
-            if (curr < 2 && score.status == 0) {
-                if (curr == 0) {
-                    let arr = (k_link || []).filter(item => !!item.js).map(item => item.js);
-                    if (arr.max().nub == arr.length) return;
-                    if (MB1 - MB2 < 0 || k_link[curr].status < 0) {
-                        return
-                    }
-                } else if (MB1 - MB2 < 0) {
-                    score.status += 1;
-                }
-                if (MB1 - MB2 > 0) {
-                    if (MD1 - MD2 > 0) {
-                        score.numner += MD1 / MD2 * config.boll
-                    }
-                    consoles.log('score.status == 0 >>> boll', code, curr, score.numner);
-                }
-                consoles.log('score.status == 0', code, curr, score.numner);
-                scoreFun(curr+1, len, k_link);
-            } else if (score.status == 1) {
-                if (MB1 - MB2 < 0) {
-                    if (MD1 - MD2 < 0) {
-                        score.numner += MD2 / MD1 * config.boll * 2;
-                    }
-                } else {
-                    score.status++;
-                }
-                consoles.log('score.status == 1', code, curr, score.numner);                
-                scoreFun(curr+1, len, k_link);
-            } else if (curr > 2 && score.status == 3) {
-                score.numner += 3 * config.boll;
-                consoles.log('score.status == 3', code, curr, score.numner);                
-                return;
-            } else {
-                return;
-            }
         }
     }
   }
