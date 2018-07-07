@@ -1,0 +1,324 @@
+//----------------------------------扫描邮件------------------------------------------------
+Call Plugin.Msg.Tips("脚本开始运行")
+Dim MySec
+MySec = 0
+Dim MyFor
+MyFor = 0
+Dim Mytype
+Mytype = 0
+Dim MyUp
+MyUp = 2
+Dim MyDow
+MyDow = 2
+Rem 扫描
+Call Plugin.Msg.Tips("扫描")
+MySec = MySec + 1 'MySec 包含代表当前秒的数字。 Second(Now)
+If MySec = 15 Then 
+MySec = 0
+Goto 返回邮件列表
+End If
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\回降中.bmp",0.99,yjX1,yjY1
+If yjX1 > 0 And yjY1 > 0 Then 
+MoveTo yjX1 + 20, yjY1 + 5
+LeftClick 1
+Goto 卖出
+End If
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\回升中.bmp",0.99,yjX1,yjY1
+If yjX1 > 0 And yjY1 > 0 Then 
+MoveTo yjX1 + 20, yjY1 + 5
+LeftClick 1
+Goto 买入
+End If
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\清仓.bmp",0.99,yjX1,yjY1
+If yjX1 > 0 And yjY1 > 0 Then 
+MoveTo yjX1 + 20, yjY1 + 5
+LeftClick 1
+Goto 清仓
+End If
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\全仓.bmp",0.99,yjX1,yjY1
+If yjX1 > 0 And yjY1 > 0 Then
+MoveTo yjX1 + 20, yjY1 + 5
+LeftClick 1
+Goto 全仓
+End If
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\登录.bmp",0.99,yjX1,yjY1
+If yjX1 > 0 And yjY1 > 0 Then
+MoveTo yjX1 + 20, yjY1 + 5
+LeftClick 1
+Goto 全仓
+End If
+Delay 1000'等待1秒
+Goto 扫描
+Rem 返回邮件列表
+Call Plugin.Msg.Tips("返回邮件列表")
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\关闭.bmp",0.9,gbtX,gbtY
+If gbtX > 0 And gbtY > 0 Then 
+MoveTo gbtX + 20, gbtY + 5
+LeftClick 1
+Delay 300'等待
+End If
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\确认2.bmp",0.9,intXqr,intYqr
+If intXqr > 0 And intYqr > 0 Then 
+MoveTo intXqr + 20, intYqr + 5
+LeftClick 1
+Delay 300'等待
+End If
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\刷新.bmp",0.9,ggtX,ggtY
+If ggtX > 0 And ggtY > 0 Then 
+MoveTo ggtX + 20, ggtY + 5
+LeftClick 1
+End If
+Delay 100
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\港股通.bmp",0.9,ggtX1,ggtY1
+If ggtX1 > 0 And ggtY1 > 0 Then 
+MoveTo ggtX1 + 20, ggtY1 + 5
+LeftClick 1
+Delay 100'等待1秒
+KeyPress "Enter", 1
+End If
+Goto 扫描
+//----------------------------------买入卖出----------------------------------------------------
+Rem 买入
+Delay 1000'等待1秒
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\代码.bmp",0.9,daimaX1,daimaY1
+If daimaX1 > 0 And daimaY1 > 0 Then 
+MoveTo daimaX1 + 100, daimaY1 + 20
+LeftClick 1
+Delay 100'等待1秒
+LeftClick 1
+Delay 100'等待1秒
+KeyDown "Ctrl", 1
+Delay 207
+KeyDown "C", 1
+Delay 100'等待1秒
+KeyUp "C", 1
+Delay 100'等待1秒
+KeyUp "Ctrl", 1
+End If
+Call Plugin.Msg.Tips("买入")
+MyUp = MyUp - 1
+MyDow = 4
+If MyUp < 0 Then 
+MyUp = 0
+End If
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\买入.bmp",0.9,intX,intY
+If intX > 0 And intY > 0 Then 
+MoveTo intX + 20, intY + 5
+LeftClick 1
+Delay 1000'等待1秒
+KeyDown "Ctrl", 1
+Delay 207
+KeyDown "V", 1
+Delay 100'等待1秒
+KeyUp "V", 1
+Delay 100'等待1秒
+KeyUp "Ctrl", 1
+Mytype = 1
+End If
+Delay 500'等待1秒
+Goto 获取列表
+Rem 卖出
+Delay 1000'等待1秒
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\代码.bmp",0.9,daimaX1,daimaY1
+If daimaX1 > 0 And daimaY1 > 0 Then 
+MoveTo daimaX1 + 100, daimaY1 + 20
+LeftClick 1
+Delay 100'等待1秒
+LeftClick 1
+Delay 100'等待1秒
+KeyDown "Ctrl", 1
+Delay 207
+KeyDown "C", 1
+Delay 100'等待1秒
+KeyUp "C", 1
+Delay 100'等待1秒
+KeyUp "Ctrl", 1
+End If
+Call Plugin.Msg.Tips("卖出")
+MyDow = MyDow - 1
+MyUp = 4
+If MyDow < 0 Then 
+MyDow = 0
+End If
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\卖出.bmp",0.9,cX,cY
+If cX > 0 And cY > 0 Then 
+MoveTo cX + 20, cY + 5
+LeftClick 1
+Delay 1000'等待1秒
+KeyDown "Ctrl", 1
+Delay 207
+KeyDown "V", 1
+Delay 100'等待1秒
+KeyUp "V", 1
+Delay 100'等待1秒
+KeyUp "Ctrl", 1
+Mytype = 0
+End If
+Rem 获取列表
+Delay 1000'等待1秒
+Call Plugin.Msg.Tips("获取股票信息")
+Delay 1000'等待1秒
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\0_0.bmp",0.9,xxX,xxY
+If xxX > 0 And xxY > 0 Then
+If Mytype = 0 Then 
+MoveTo xxX + 15 + MyDow * 45, xxY + 3
+Else 
+MoveTo xxX + 15 + MyUp * 45, xxY + 3
+End If
+LeftClick 1
+End If
+Rem 提交
+If Mytype = 0 Then 
+Goto 卖出确认
+End If
+//FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\买入确认.bmp",0.9,intX3,intY3
+//If intX3 > 0 And intY3 > 0 Then 
+//MoveTo intX3 + 20, intY3 + 5
+//LeftClick 1
+//End If
+Delay 100'等待1秒
+KeyPress "Enter", 1
+Goto 获取结果
+Rem 卖出确认
+//FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\卖出确认.bmp",0.9,intXmc,intYmc
+//If intXmc > 0 And intYmc > 0 Then 
+//MoveTo intXmc + 20, intYmc + 5
+//LeftClick 1
+//End If
+Delay 100'等待1秒
+KeyPress "Enter", 1
+Rem 获取结果
+Delay 1000'等待1秒
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\确认2.bmp",0.9,intX4,intY4
+If intX4 > 0 And intY4 > 0 Then 
+MoveTo intX4 + 20, intY4 + 5
+LeftClick 1
+Goto 返回邮件列表
+End If
+If MyFor > 15 Then 
+KeyPress "Enter", 1
+MyFor = 0
+Goto 返回邮件列表
+End If
+MyFor = MyFor + 1
+Goto 获取结果
+//---------------------------------买入卖出end---------------------------------------------------------
+//---------------------------------清仓---------------------------------------------------------
+Rem 清仓
+Delay 1000'等待1秒
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\代码.bmp",0.9,daimaX1,daimaY1
+If daimaX1 > 0 And daimaY1 > 0 Then 
+MoveTo daimaX1 + 100, daimaY1 + 20
+LeftClick 1
+Delay 100'等待1秒
+LeftClick 1
+Delay 100'等待1秒
+KeyDown "Ctrl", 1
+Delay 207
+KeyDown "C", 1
+Delay 100'等待1秒
+KeyUp "C", 1
+Delay 100'等待1秒
+KeyUp "Ctrl", 1
+End If
+Call Plugin.Msg.Tips("清仓")
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\卖出.bmp",0.9,cX,cY
+If cX > 0 And cY > 0 Then 
+MoveTo cX + 20, cY + 5
+LeftClick 1
+Delay 1000'等待1秒
+KeyDown "Ctrl", 1
+Delay 207
+KeyDown "V", 1
+Delay 100'等待1秒
+KeyUp "V", 1
+Delay 100'等待1秒
+KeyUp "Ctrl", 1
+End If
+Delay 1000'等待1秒
+Call Plugin.Msg.Tips("获取股票信息")
+Delay 1000'等待1秒
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\0_0.bmp",0.9,xxX,xxY
+If xxX > 0 And xxY > 0 Then
+MoveTo xxX + 15 + 3 * 45, xxY - 13
+LeftClick 1
+End If
+//FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\卖出确认.bmp",0.9,intXmc,intYmc
+//If intXmc > 0 And intYmc > 0 Then 
+//MoveTo intXmc + 20, intYmc + 5
+//LeftClick 1
+//End If
+Delay 100'等待1秒
+KeyPress "Enter", 1
+Rem 清仓_获取结果
+Delay 1000'等待1秒
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\确认2.bmp",0.9,intX4,intY4
+If intX4 > 0 And intY4 > 0 Then 
+MoveTo intX4 + 20, intY4 + 5
+LeftClick 1
+Goto 返回邮件列表
+End If
+If MyFor > 15 Then 
+KeyPress "Enter", 1
+MyFor = 0
+Goto 返回邮件列表
+End If
+MyFor = MyFor + 1
+Goto 清仓_获取结果
+//---------------------------------全仓---------------------------------------------------------
+Rem 全仓
+Delay 1000'等待1秒
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\代码.bmp",0.9,daimaX1,daimaY1
+If daimaX1 > 0 And daimaY1 > 0 Then 
+MoveTo daimaX1 + 100, daimaY1 + 20
+LeftClick 1
+Delay 100'等待1秒
+LeftClick 1
+Delay 100'等待1秒
+KeyDown "Ctrl", 1
+Delay 207
+KeyDown "C", 1
+Delay 100'等待1秒
+KeyUp "C", 1
+Delay 100'等待1秒
+KeyUp "Ctrl", 1
+End If
+Call Plugin.Msg.Tips("全仓")
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\买入.bmp",0.9,cX,cY
+If cX > 0 And cY > 0 Then 
+MoveTo cX + 20, cY + 5
+LeftClick 1
+Delay 1000'等待1秒
+KeyDown "Ctrl", 1
+Delay 207
+KeyDown "V", 1
+Delay 100'等待1秒
+KeyUp "V", 1
+Delay 100'等待1秒
+KeyUp "Ctrl", 1
+End If
+Delay 1000'等待1秒
+Call Plugin.Msg.Tips("获取股票信息")
+Delay 1000'等待1秒
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\0_0.bmp",0.9,xxX,xxY
+If xxX > 0 And xxY > 0 Then
+MoveTo xxX + 15 + 3 * 45, xxY - 13
+LeftClick 1
+End If
+Delay 100'等待1秒
+KeyPress "Enter", 1
+Rem 全仓_获取结果
+Delay 1000'等待1秒
+FindPic 0,0,1366,768,"D:\按键精灵\按键精灵2014\screen\viewHtml\确认2.bmp",0.9,intX4,intY4
+If intX4 > 0 And intY4 > 0 Then 
+MoveTo intX4 + 20, intY4 + 5
+LeftClick 1
+Goto 返回邮件列表
+End If
+If MyFor > 15 Then 
+KeyPress "Enter", 1
+MyFor = 0
+Goto 返回邮件列表
+End If
+MyFor = MyFor + 1
+Goto 全仓_获取结果
