@@ -100,7 +100,8 @@ Array.prototype.min = function () {
   let config = {
     volume: 6, // 量比
     BF: 1, // 反转趋势
-    bollCurr: 5 // 布林线趋势
+    bollCurr: 5, // 布林线趋势
+    equilibrium: 100 // 均线分
   };
   axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sh601002"} : {}).then(function(d) {
     if (d.data) {
@@ -246,6 +247,8 @@ Array.prototype.min = function () {
         consoles.log('bollCurr  ------>',code, score);
         score.numner += volumeFun(k_link);
         consoles.log('volumeFun  ------>',code, score);
+        score.numner -= equilibrium(k_link);
+        consoles.log('equilibrium  ------>',code, score);
         // score.numner += BF(k_link); // 趋势
         // consoles.log('BF  ------>',code, score);
         let name = parseInt(score.numner);
@@ -291,7 +294,19 @@ Array.prototype.min = function () {
     };
     return obj
   }
-  
+  // 均线
+  function equilibrium(k_link) {
+    let nub = 0;
+    let item = k_link[0];
+    if (item && item.mean5 && item.js) {
+        if (item.mean5 > item.js) {
+            nub = (item.mean5 - item.js) / item.mean5 * config.equilibrium;
+        } else {
+            nub = (item.js - item.mean5) / item.js * config.equilibrium;
+        }
+    }
+    return nub;
+  }
   // 反转趋势
   function BF(k_link) {
     let nub = 0;
