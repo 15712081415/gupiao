@@ -97,6 +97,7 @@ Array.prototype.min = function () {
   let serverUrl = '';
   let curr = 0;
   let MaxNumber = [];
+  let type = data.type;
   let config = {
     volume: 6, // 量比
     BF: 1, // 反转趋势
@@ -111,16 +112,6 @@ Array.prototype.min = function () {
     }
     init(res);
   })
-  
-  async function init (resSend) {
-    let arr = fileArr.map(item => item.codeID);
-    for(let i = 0;i<arr.length; i+=200) {
-      let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
-      await api(codeArr);
-      console.log('init', i, arr.length);
-    }
-    getHtml(0, arr.length, resSend);
-  }
   function api(codeID) {
     return axios.get('http://hq.sinajs.cn/list=' + codeID, {
        responseType:'arraybuffer'
@@ -134,25 +125,33 @@ Array.prototype.min = function () {
       })
     })
   }
-  function getHtml(index, len, resSend){
+
+  async function init (resSend) {
+    let arr = fileArr.map(item => item.codeID);
+    for(let i = 0;i<arr.length; i+=200) {
+      let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
+      await api(codeArr);
+      console.log('init', i, arr.length);
+    }
+    for(let i = 0;i<arr.length; i++) {
+        getHtml(i, arr.length);
+    }
+    // 发送结果
+    if (!MaxNumber.length) return;
+    emailGet(null, '股票评分', MaxNumber.srotGrade());
+    let code = MaxNumber[0][0].code;
+    let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
+    let Arr = MaxNumber.val[0].concat(MaxNumber.val[1]);
+    resSend.send(JSON.stringify(Arr.slice(0, Number(type))));
+    console.log('发送全仓邮件');
+    emailGet(null, '[' + code + ']:全仓', nubMon);
+  }
+
+  function getHtml(index, len){
     console.log('indexKS', index, len);
     let item = fileArr[index];    
-    if (index == len) {
-        if (!MaxNumber.length) return;
-        emailGet(null, '股票评分', MaxNumber.srotGrade());
-        let code = MaxNumber[0][0].code;
-        let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
-        let arr = MaxNumber.val[0].concat(MaxNumber.val[1]);
-        resSend.send(JSON.stringify(arr.slice(0,2)));
-        console.log('发送全仓邮件');
-        emailGet(null, '[' + code + ']:全仓', nubMon);
-        return
-    }
     let data = content[item.codeID];
     if (!(fileArr[index] && fileArr[index]['K-Lin'] && data)) {
-        if (index < (len - 1)) {
-            getHtml(index + 1, len, resSend)
-        }
         return consoles.log('not K-Lin');
     }
     let [
@@ -188,12 +187,10 @@ Array.prototype.min = function () {
     ]
     if (temp1.indexOf('退市') > -1 || temp1.indexOf('ST') > -1) {
         consoles.log('劣质股！');
-        getHtml(index + 1, len, resSend);
         return;
     }
     if (Number(temp4) == 0 || (Number(temp4) - Number(temp3)) / Number(temp3) > 0.05) {
         consoles.log('max 5%');
-        getHtml(index + 1, len, resSend);
         return;
     }
     let timeRQ = temp7;
@@ -212,6 +209,7 @@ Array.prototype.min = function () {
         'timeRQ': temp7,
         'status': Number(temp4) - Number(temp2)
     }
+    console.log('boll');
     o.boll = boll(item['K-Lin'], o);
     if (!item['K-Lin'][0] || item['K-Lin'][0].timeRQ != o.timeRQ) {
         k_link = [o];
@@ -224,6 +222,7 @@ Array.prototype.min = function () {
         }
     }
     // 计算5，10均线
+    console.log('均线');
     k_link.forEach((obj, index) => {
         if (index + 5 < k_link.length) {
             obj.mean5 = k_link.slice(index, index + 5).sum('js');
@@ -234,7 +233,7 @@ Array.prototype.min = function () {
     });
     consoles.log('开始scoreNumber计算分数');
     scoreNumber(k_link, item.codeID);
-    getHtml(index + 1, len, resSend);
+    console.log('getHtml + 1');
   }
   function scoreNumber(k_link, code) {
     consoles.log('scoreNumber');    

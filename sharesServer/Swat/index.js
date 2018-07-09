@@ -131,10 +131,10 @@ function gainCode() {
     }
 }
 // 发送最新股票评分
-$.schedule.scheduleJob('5 * * * * 1-5', function () { // 5 55 14 * * 1-5
+$.schedule.scheduleJob('5 55 14 * * 1-5', function () {
     console.log('发送最新股票评分');
     $.status = false; // 停止统计,避免占用资源
-    $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade?type=1').then(function (res){
+    $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade?type=2').then(function (res){
         if (res) {
             let arr = res.data;
             if (arr[2]) {
