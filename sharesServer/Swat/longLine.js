@@ -61,13 +61,14 @@ module.exports = function (code, flag, $) {
               console.log(err);
           });
         }
-        let stop = ((temp5 - temp3) / temp3) || 0;
-        console.log(code + '检测行情', parseInt((temp4 - temp3) / temp3 * 10000) / 100 + '%', stop);
+        let stop = (parseInt((temp5 - temp3) / temp3 * 10000) / 100) || 0;
+        let currEnt = parseInt((temp4 - temp3) / temp3 * 10000) / 100;
+        console.log(code + '检测行情', currEnt + '%', stop);
         if (!$.openVal[code]) $.openVal[code] = {v:temp3, s:parseInt((temp4 - temp3) / temp3 * 10000) / 100};        
-        if ((temp4 - temp3) / temp3 < -0.025 + (stop < 2 && stop > 1 ? 1 : stop)) {
+        if (currEnt < (stop < 0.02 && stop > 0.01 ? 0.01 : stop) - 0.025) {
             if (!$.flagCode[code]) {
                 $.flagCode[code] = true;
-                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ parseInt((temp4 - temp3) / temp3 * 10000) / 100 +'%</p>';
+                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'%</p>';
                 $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
                 emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
             }
@@ -107,8 +108,6 @@ module.exports = function (code, flag, $) {
                     sale = '清叁'
                   } else if ($.maxCurr[code].arr.length == 2) {
                     sale = '清贰'
-                  } else {
-                    sale = '清仓'
                   }
                   $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sale});
                   emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + sale, '当前价：' + $.Sday[code][lengths].toFixed(2) + '当日平均值：' + mean.toFixed(2) + ';当日最高：' + max.max.toFixed(2) + ';上行：' + maxSum.toFixed(2) + nubMon);

@@ -100,10 +100,6 @@ $.schedule.scheduleJob(ruleCurr, function () {
 });
 
 function gainCode() {
-     // 测试用
-    // $.io.sockets.emit('news',{content: '代码：888888', title: '全仓'});
-    // $.io.sockets.emit('news',{content: '代码：888888', title: '清仓'});
-    // $.io.sockets.emit('news',{content: '代码：888888', title: '回降中'});
     if (!$.status) return;
     let time = new Date();
     if (time.getHours() != 9 || time.getMinutes() > 30) {
@@ -147,13 +143,17 @@ $.schedule.scheduleJob('5 55 14 * * 1-5', function () {
                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[1].code},"setter":{"status":1}}).then(res=>{
                     console.log(arr[1].code+'修改状态成功')
                 })
-                $.io.sockets.emit('news',{content: '代码：' + arr[1].code.substring(2, 8), title: '买贰'});
+                setTimeout(() => {
+                    $.io.sockets.emit('news',{content: '代码：' + arr[1].code.substring(2, 8), title: '买贰'});
+                }, 1000);
             }
             if (arr[0]) {
                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[0].code},"setter":{"status":1}}).then(res=>{
                     console.log(arr[0].code+'修改状态成功')
                 })
-                $.io.sockets.emit('news',{content: '代码：' + arr[0].code.substring(2, 8), title: '全仓'});
+                setTimeout(() => {
+                    $.io.sockets.emit('news',{content: '代码：' + arr[0].code.substring(2, 8), title: '全仓'});
+                }, 2000);
             }
         }
         $.status = true; // 恢复统计
