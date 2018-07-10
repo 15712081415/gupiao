@@ -145,7 +145,7 @@ $.schedule.scheduleJob('5 55 14 * * 1-5', function () {
                 })
                 setTimeout(() => {
                     $.io.sockets.emit('news',{content: '代码：' + arr[1].code.substring(2, 8), title: '买贰'});
-                }, 1000);
+                }, 5000);
             }
             if (arr[0]) {
                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[0].code},"setter":{"status":1}}).then(res=>{
@@ -153,7 +153,7 @@ $.schedule.scheduleJob('5 55 14 * * 1-5', function () {
                 })
                 setTimeout(() => {
                     $.io.sockets.emit('news',{content: '代码：' + arr[0].code.substring(2, 8), title: '全仓'});
-                }, 2000);
+                }, 10000);
             }
         }
         $.status = true; // 恢复统计
