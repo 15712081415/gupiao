@@ -93,7 +93,7 @@ function loading() {
 // 开始记录今天的数据
 let ruleCurr = new $.schedule.RecurrenceRule();
 ruleCurr.dayOfWeek = [1, 2, 3, 4, 5]; // 周
-$.status && (ruleCurr.hour = [9, 10, 11, 12, 13, 14, 15]); // 时
+ruleCurr.hour = [9, 10, 11, 12, 13, 14, 15]; // 时
 ruleCurr.second = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]; // 秒
 $.schedule.scheduleJob(ruleCurr, function () {
     $.codeIDarr1.length > 0 || $.codeIDarr2.length > 0 || $.codeIDarr3.length > 0 ? gainCode() : loading();

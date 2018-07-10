@@ -65,7 +65,7 @@ module.exports = function (code, flag, $) {
         let currEnt = parseInt((temp4 - temp3) / temp3 * 10000) / 100;
         console.log(code + '检测行情', currEnt + '%', stop);
         if (!$.openVal[code]) $.openVal[code] = {v:temp3, s:parseInt((temp4 - temp3) / temp3 * 10000) / 100};        
-        if (currEnt < (stop < 0.02 && stop > 0.01 ? 0.01 : stop) - 0.025) {
+        if (currEnt < (stop < 2.5 ? -0.5 : stop) - 2.5) {
             if (!$.flagCode[code]) {
                 $.flagCode[code] = true;
                 let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'%</p>';
