@@ -137,14 +137,20 @@ $.schedule.scheduleJob('5 55 14 * * 1-5', function () {
                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[2].code},"setter":{"status":1}}).then(res=>{
                     console.log(arr[2].code+'修改状态成功')
                 })
-                $.io.sockets.emit('news',{content: '代码：' + arr[2].code.substring(2, 8), title: '买叁'});
+                let numCode = arr[2].code.substring(2, 8);
+                $.io.sockets.emit('news',{content: '代码：' + numCode, title: '买叁'});
+                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';                
+                emailGet(null, '[' + arr[2].code + ']:买叁', nubMon);
             }
             if (arr[1]) {
                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[1].code},"setter":{"status":1}}).then(res=>{
                     console.log(arr[1].code+'修改状态成功')
                 })
                 setTimeout(() => {
-                    $.io.sockets.emit('news',{content: '代码：' + arr[1].code.substring(2, 8), title: '买贰'});
+                    let numCode = arr[1].code.substring(2, 8);
+                    $.io.sockets.emit('news',{content: '代码：' + numCode, title: '买贰'});
+                    let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';
+                    emailGet(null, '[' + arr[1].code + ']:买贰', nubMon);
                 }, 5000);
             }
             if (arr[0]) {
@@ -152,7 +158,10 @@ $.schedule.scheduleJob('5 55 14 * * 1-5', function () {
                     console.log(arr[0].code+'修改状态成功')
                 })
                 setTimeout(() => {
-                    $.io.sockets.emit('news',{content: '代码：' + arr[0].code.substring(2, 8), title: '全仓'});
+                    let numCode = arr[0].code.substring(2, 8);
+                    $.io.sockets.emit('news',{content: '代码：' + numCode, title: '全仓'});
+                    let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';
+                    emailGet(null, '[' + arr[0].code + ']:全仓', nubMon);
                 }, 10000);
             }
         }

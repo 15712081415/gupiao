@@ -140,11 +140,8 @@ Array.prototype.min = function () {
     if (!MaxNumber.length) return;
     emailGet(null, '股票评分', MaxNumber.srotGrade());
     let code = MaxNumber[0][0].code;
-    let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
     let Arr = MaxNumber.val[0].concat(MaxNumber.val[1]);
     resSend.send(JSON.stringify(Arr.slice(0, Number(type))));
-    console.log('发送全仓邮件');
-    emailGet(null, '[' + code + ']:全仓', nubMon);
   }
 
   function getHtml(index, len){
