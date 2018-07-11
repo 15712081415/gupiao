@@ -139,7 +139,6 @@ Array.prototype.min = function () {
     // 发送结果
     if (!MaxNumber.length) return;
     emailGet(null, '股票评分', MaxNumber.srotGrade());
-    let code = MaxNumber[0][0].code;
     let Arr = MaxNumber.val[0].concat(MaxNumber.val[1]);
     resSend.send(JSON.stringify(Arr.slice(0, Number(type))));
   }
