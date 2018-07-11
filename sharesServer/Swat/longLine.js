@@ -64,7 +64,7 @@ module.exports = function (code, flag, $) {
         let stop = (parseInt((temp5 - temp3) / temp3 * 10000) / 100) || 0;
         let currEnt = parseInt((temp4 - temp3) / temp3 * 10000) / 100;
         console.log(code + '检测行情', currEnt + '%', stop);
-        if (!$.openVal[code]) $.openVal[code] = {v:temp3, s:parseInt((temp4 - temp3) / temp3 * 10000) / 100};        
+        if (!$.openVal[code]) $.openVal[code] = {v:temp3, s: currEnt};        
         if (currEnt < (stop < 2.5 ? -0.5 : stop) - 2.5) {
             if (!$.flagCode[code]) {
                 $.flagCode[code] = true;
