@@ -165,19 +165,9 @@ module.exports.endEmail = function ($) {
     for (let item in $.codeIDarr1) {
         if ($.codeIDarr1[item].codeID) {
             let code = $.codeIDarr1[item].codeID;
-            if (!$.openVal[code] || $.openVal[code].v < 9.9) {
+            if (!$.openVal[code] || $.openVal[code].s < 9.9) {
                 let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
                 let toEmail = null;
-                // if ($.soaringMax[code] == 1) {
-                //     $.deal[code] && $.deal[code].up++
-                //     emailGet(toEmail, $.codeData[code].name + '[' + code + ']:回降中', '当前价：' + $.Sday[code][$.Sday[code].length - 1].toFixed(2) + nubMon);
-                //     $.soaringMax[code] = 0;
-                // }
-                // if ($.soaringMin[code] == 1) {
-                //     $.deal[code] && $.deal[code].dow++
-                //     emailGet(toEmail, $.codeData[code].name + '[' + code + ']:回升中', '当前价：' + $.Sday[code][$.Sday[code].length - 1].toFixed(2) + nubMon);
-                //     $.soaringMin[code] = 0;
-                // }
                 $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
                 emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status":0}});

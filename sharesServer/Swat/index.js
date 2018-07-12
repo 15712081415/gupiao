@@ -127,12 +127,12 @@ function gainCode() {
     }
 }
 // 清空仓位
-$.schedule.scheduleJob('5 55 14 * * 1-5', function () {
+$.schedule.scheduleJob('5 55 14 * * 1-5', function () { // 5 55 14 * * 1-5
     $.codeIDarr1.length && longLine.endEmail($);
     $.codeIDarr2.length && stup.endEmail($);
 });
 // 发送最新股票评分
-$.schedule.scheduleJob('5 56 14 * * 1-5', function () {
+$.schedule.scheduleJob('5 56 14 * * 1-5', function () { // 5 56 14 * * 1-5
     console.log('发送最新股票评分');
     $.status = false; // 停止统计,避免占用资源
     $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade?type=2').then(function (res){
@@ -182,3 +182,14 @@ $.schedule.scheduleJob('5 0 16 * * 1-5', function () {
     minuteK($); // 最后5分钟K线
 });
 console.log('已开启统计计算服务')
+
+// 发送邮件
+function emailGet(to, tit, text) {
+    $.email.send(to, tit, text, function (err, info) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        console.log('邮件:', tit);
+    })
+  }
