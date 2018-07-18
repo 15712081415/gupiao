@@ -32,10 +32,10 @@ Array.prototype.min = function () {
   }
   // 平均数
   Array.prototype.sum = function (name) {
+    let _this = this;
     let sum = 0;
-    let len = this.length;
+    let len = _this.length;
     let i = 0;
-    let _this = this
     if (typeof _this[i] == 'object') {
         for (i = 0; i < len; i++) {
             sum = sum + Number(_this[i][name]);
