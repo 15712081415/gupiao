@@ -104,6 +104,7 @@ module.exports = function (code, flag, $) {
                   let sale = '';
                   if ($.maxCurr[code].arr.length >= 3 ||  $.openVal[code].v * 1.075 < currDay) {
                     sale = '清仓'
+                    $.flagCode[code] = true;
                   } else if ($.maxCurr[code].arr.length == 1) {
                     sale = '清叁'
                   } else if ($.maxCurr[code].arr.length == 2) {
@@ -163,8 +164,8 @@ function statusFlag (k_lin) {
 
 module.exports.endEmail = function ($) {
     for (let item in $.codeIDarr1) {
-        if ($.codeIDarr1[item].codeID) {
-            let code = $.codeIDarr1[item].codeID;
+        let code = $.codeIDarr1[item].codeID;
+        if (code && !$.flagCode[code]) {
             if (!$.openVal[code] || $.openVal[code].s < 9.9) {
                 let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
                 let toEmail = null;

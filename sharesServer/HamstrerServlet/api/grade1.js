@@ -49,7 +49,7 @@ Array.prototype.min = function () {
   }
   // 格式化排名
   Array.prototype.srotGrade = function () {
-    let _this = this
+    let _this = this;
     let arr = _this.reverse();
     let str = '分数排名：<br />';
     let val = [];
@@ -104,7 +104,7 @@ Array.prototype.min = function () {
     bollCurr: 5, // 布林线趋势
     equilibrium: 100 // 均线分
   };
-  axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sh603399"} : {}).then(function(d) {
+  axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sz300266"} : {}).then(function(d) {
     if (d.data) {
         fileArr = d.data.filter(item => {
             return (item.codeID[2] == 6 || item.codeID[2] == 3 || item.codeID[2] == 0) && item.codeID[0] == 's';
@@ -112,7 +112,7 @@ Array.prototype.min = function () {
     }
     init(res);
   })
-  function api(codeID) {
+  function api(codeID, cb) {
     return axios.get('http://hq.sinajs.cn/list=' + codeID, {
        responseType:'arraybuffer'
     }).then(function (res) {
@@ -123,24 +123,28 @@ Array.prototype.min = function () {
         let obj = item.split('=');
         content[obj[0]] = obj[1].split('"').join('').split(';').join('').split(',')
       })
+      curr++;
+      curr * 200 >= fileArr.length && cb();
     })
   }
 
-  async function init (resSend) {
+  function init (resSend) {
     let arr = fileArr.map(item => item.codeID);
     for(let i = 0;i<arr.length; i+=200) {
       let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
-      await api(codeArr);
+      api(codeArr, cb);
       console.log('init', i, arr.length);
     }
-    for(let i = 0;i<arr.length; i++) {
-        getHtml(i, arr.length);
+    function cb () {
+        for(let i = 0;i<arr.length; i++) {
+            getHtml(i, arr.length);
+        }
+        // 发送结果
+        if (!MaxNumber.length) return;
+        emailGet(null, '双针探底股票评分', MaxNumber.srotGrade());
+        let Arr = MaxNumber.val[0].concat(MaxNumber.val[1]);
+        resSend.send(JSON.stringify(Arr.slice(0, Number(type))));
     }
-    // 发送结果
-    if (!MaxNumber.length) return;
-    emailGet(null, '双针探底股票评分', MaxNumber.srotGrade());
-    let Arr = MaxNumber.val[0].concat(MaxNumber.val[1]);
-    resSend.send(JSON.stringify(Arr.slice(0, Number(type))));
   }
 
   function getHtml(index, len){
@@ -238,14 +242,14 @@ Array.prototype.min = function () {
     // k_link.splice(0,1); // 测试代码去掉 n 数据
     if (k_link.length > 2) {
         consoles.log('k_link', k_link[0]);
-        score.numner += doubleNeedeDip(k_link);
+        let Dip = doubleNeedeDip(k_link);
+        score.numner += Dip.val;
         consoles.log('doubleNeedeDip  ------>',code, score);
-        // score.numner && (score.numner += bollCurr(k_link));
         score.numner += bollCurr(k_link)
         consoles.log('bollCurr  ------>',code, score);
-        // score.numner += volumeFun(k_link);
-        // consoles.log('volumeFun  ------>',code, score);
-        score.numner -= equilibrium(k_link);
+        score.numner += volumeFun(k_link);
+        consoles.log('volumeFun  ------>',code, score);
+        score.numner -= equilibrium(k_link, Dip.val ? Dip.sum : null);
         consoles.log('equilibrium  ------>',code, score);
         // score.numner += BF(k_link); // 趋势
         // consoles.log('BF  ------>',code, score);
@@ -293,14 +297,16 @@ Array.prototype.min = function () {
     return obj
   }
   // 均线
-  function equilibrium(k_link) {
+  function equilibrium(k_link, sum) {
     let nub = 0;
     let item = k_link[0];
-    if (item && item.mean5 && item.js) {
-        if (item.mean5 > item.js) {
-            nub = (item.mean5 - item.js) / item.mean5 * config.equilibrium;
+    let mean = sum ? sum : item.mean5;
+    let min = sum ? item.min : item.js;
+    if (item && mean && min) {
+        if (mean > min) {
+            nub = (mean - min) / mean * config.equilibrium;
         } else {
-            nub = (item.js - item.mean5) / item.js * config.equilibrium;
+            nub = (min - mean) / min * config.equilibrium;
         }
     }
     return nub;
@@ -382,6 +388,7 @@ Array.prototype.min = function () {
 
   // 双针探底
   function doubleNeedeDip (k_link) {
+    consoles.log('doubleNeedeDip k_link ------>', k_link[0].timeRQ);
       let num = 0;
       let min0 = {};
       let min1 = {};
@@ -389,24 +396,30 @@ Array.prototype.min = function () {
         let obj = {
             val: 0, // 下引线得分
             min: item.min, // 最低价
-            js: item.js, // 收盘价
+            js: 0, // 下价
             flag: false // 是否符合引线
         };
         if (item.status > 0) {
            obj.val = parseInt((item.ks - item.min) / item.min * 10000 || 0) / 100;
+           consoles.log('doubleNeedeDip obj.val ------>', obj.val);
            obj.flag = obj.val > n;
+           obj.js = item.ks;
         } else {
            obj.val = parseInt((item.js - item.min) / item.min * 10000 || 0) / 100;
+           consoles.log('doubleNeedeDip obj.val ------>', obj.val);
            obj.flag = obj.val > n;
+           obj.js = item.js;
         }
         return obj;
       }
       let [js,ks,max,min] = [[],[],[],[]];
       k_link.forEach((item, i) => {
-        js.push(item.js);
-        ks.push(item.ks);
-        max.push(item.max);
-        min.push(item.min);
+        if (i<10) {
+            js.push(item.js);
+            ks.push(item.ks);
+            max.push(item.max);
+            min.push(item.min);
+        }
       });
       let minNmb = min.min().nub;
       consoles.log('doubleNeedeDip minNmb1 ------>', minNmb);
@@ -420,14 +433,16 @@ Array.prototype.min = function () {
             min0 = minNeede(k_link[minNmb], 2); // 最低针探底
             if (minNmb == 0 && min0.flag) {
                 num += min0.val;
-                num += min1.val;            
+                num += min1.val;          
                 if (min0.min > min1.min && min0.min < min1.js) {
                     num += 10;
                 }
+                consoles.log('doubleNeedeDip + ------>', num);                
             }
           }
       }
-      return num
+      consoles.log('doubleNeedeDip end ------>', num);  
+      return {val:num, sum: (min1.js + min1.min) / 2}
   }
 
   // 发送邮件
