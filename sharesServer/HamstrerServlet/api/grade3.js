@@ -138,7 +138,7 @@ Array.prototype.min = function () {
     }
     // 发送结果
     if (!MaxNumber.length) return;
-    emailGet(null, '股票评分', MaxNumber.srotGrade());
+    emailGet(null, '股票评分旧', MaxNumber.srotGrade());
     let Arr = MaxNumber.val;
     resSend.send(JSON.stringify(Arr.slice(0, Number(type))));
   }
@@ -235,18 +235,18 @@ Array.prototype.min = function () {
     consoles.log('scoreNumber');    
     // if (code == 'sh300062') debugger
     let score = {status:0, numner:0};
-    // k_link.splice(0,1); // 测试代码去掉 n 数据
+    // k_link.splice(0,2); // 测试代码去掉 n 数据
     if (k_link.length > 2) {
         consoles.log('k_link', k_link[0]);
-        // score.numner += bollCurr(k_link);
-        score.numner += bollCurr(k_link) > 15 ? 15 : bollCurr(k_link);
+        score.numner += bollCurr(k_link);
+        // score.numner += bollCurr(k_link) > 15 ? 15 : bollCurr(k_link);
         consoles.log('bollCurr  ------>',code, score);
         score.numner += volumeFun(k_link);
         consoles.log('volumeFun  ------>',code, score);
         score.numner -= equilibrium(k_link);
         consoles.log('equilibrium  ------>',code, score);
-        // score.numner += BF(k_link); // 趋势
-        // consoles.log('BF  ------>',code, score);
+        score.numner += BF(k_link); // 趋势
+        consoles.log('BF  ------>',code, score);
         let name = parseInt(score.numner);
         if (name > 0) {
             if (!MaxNumber[name]) MaxNumber[name] = [];

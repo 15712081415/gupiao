@@ -57,7 +57,6 @@ Array.prototype.min = function () {
     _this.length = 5;
     _this.forEach((item, index) => {
         if (item) {
-            if (index < 2) val.push(item);
             index++;
             str += '<p style="font-weight: 100;"><b style="color:#4093c6">'+ index +'. </b>';
             item = item.sort((it1, it2) => {
@@ -65,6 +64,7 @@ Array.prototype.min = function () {
             })
             item = item.filter(item => { return !!item});
             item.forEach((obj, i) => {
+                val.push(obj)
                 if (i > 0) str += ',';
                 str += '<span style="color:#4093c6">'+ obj.code +':</span>(' + obj.nub + ')';
             })
@@ -142,7 +142,7 @@ Array.prototype.min = function () {
         // 发送结果
         if (!MaxNumber.length) return;
         emailGet(null, '双针探底股票评分', MaxNumber.srotGrade());
-        let Arr = MaxNumber.val[0].concat(MaxNumber.val[1]);
+        let Arr = MaxNumber.val;
         resSend.send(JSON.stringify(Arr.slice(0, Number(type))));
     }
   }
@@ -205,6 +205,7 @@ Array.prototype.min = function () {
         'volume': Number(volume),
         'mean5': null,
         'mean10': null,
+        'mean20': null,
         'deal': null,
         'timeRQ': temp7,
         'status': Number(temp4) - Number(temp2)
@@ -230,6 +231,9 @@ Array.prototype.min = function () {
         if (index + 10 < k_link.length) {
             obj.mean10 = k_link.slice(index, index + 10).sum('js');
         }
+        if (index + 20 < k_link.length) {
+            obj.mean20 = k_link.slice(index, index + 20).sum('js');
+        }
     });
     consoles.log('开始scoreNumber计算分数');
     scoreNumber(k_link, item.codeID);
@@ -239,20 +243,20 @@ Array.prototype.min = function () {
     consoles.log('scoreNumber');    
     // if (code == 'sh300062') debugger
     let score = {status:0, numner:0};
-    // k_link.splice(0,1); // 测试代码去掉 n 数据
+    // k_link.splice(0,2); // 测试代码去掉 n 数据
     if (k_link.length > 2) {
         consoles.log('k_link', k_link[0]);
         let Dip = doubleNeedeDip(k_link);
         score.numner += Dip.val;
         consoles.log('doubleNeedeDip  ------>',code, score);
-        score.numner += bollCurr(k_link)
+        score.numner += bollCurr(k_link) > 15 ? 15 : bollCurr(k_link);
         consoles.log('bollCurr  ------>',code, score);
-        score.numner += volumeFun(k_link);
+        score.numner += volumeFun(k_link, Dip.val);
         consoles.log('volumeFun  ------>',code, score);
         score.numner -= equilibrium(k_link, Dip.val ? Dip.sum : null);
         consoles.log('equilibrium  ------>',code, score);
-        // score.numner += BF(k_link); // 趋势
-        // consoles.log('BF  ------>',code, score);
+        score.numner += BF(k_link); // 趋势
+        consoles.log('BF  ------>',code, score);
         let name = parseInt(score.numner);
         if (name > 0) {
             if (!MaxNumber[name]) MaxNumber[name] = [];
@@ -365,10 +369,10 @@ Array.prototype.min = function () {
     return nub;
   }
   // 量比记分
-  function volumeFun(k_link) {
+  function volumeFun(k_link, type) {
       // 量比加分
       let numner = 0;
-      if (k_link[0].volume && k_link[0+1].volume && k_link[0+1].volume > k_link[0].volume) {
+      if (k_link[0].volume && k_link[0+1].volume && k_link[0+1].volume > k_link[0].volume && (!type || k_link[0].status)) {
           let vol = k_link[0+1].volume / k_link[0].volume;
           numner += (vol > 3 ? 3 : vol) * config.volume;
         //   numner += vol * config.volume;
@@ -414,16 +418,14 @@ Array.prototype.min = function () {
       }
       let [js,ks,max,min] = [[],[],[],[]];
       k_link.forEach((item, i) => {
-        if (i<10) {
-            js.push(item.js);
-            ks.push(item.ks);
-            max.push(item.max);
-            min.push(item.min);
-        }
+        js.push(item.js);
+        ks.push(item.ks);
+        max.push(item.max);
+        min.push(item.min);
       });
       let minNmb = min.min().nub;
       consoles.log('doubleNeedeDip minNmb1 ------>', minNmb);
-      if (minNmb != 0) {
+      if (minNmb != 0 && minNmb < 6) {
           min1 = minNeede(k_link[minNmb], 3); // 最低针探底
           consoles.log('doubleNeedeDip min1 ------>', minNmb);
           if (min1.flag) {
@@ -442,7 +444,7 @@ Array.prototype.min = function () {
           }
       }
       consoles.log('doubleNeedeDip end ------>', num);  
-      return {val:num, sum: (min1.js + min1.min) / 2}
+      return {val:num, sum: min1.min}
   }
 
   // 发送邮件

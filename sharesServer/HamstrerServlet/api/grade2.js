@@ -20,10 +20,10 @@ Array.prototype.min = function () {
   Array.prototype.max = function () {
     let _this = this;
     let max = Number(_this[0]);
-    let len = this.length;
+    let len = _this.length;
     let nub = 0;
     for (let i = 1; i < len; i++) {
-        if (this[i] > max) {
+        if (_this[i] > max) {
             max = Number(_this[i]);
             nub = i;
         }
@@ -49,7 +49,7 @@ Array.prototype.min = function () {
   }
   // 格式化排名
   Array.prototype.srotGrade = function () {
-    let _this = this
+    let _this = this;
     let arr = _this.reverse();
     let str = '分数排名：<br />';
     let val = [];
@@ -91,7 +91,7 @@ Array.prototype.min = function () {
     }
   }
   // -------------------------------------------------------------------------------------------
-  let test = false; // 是否展示测试console
+  let test = 0; // 是否展示测试console
   let fileArr = [];
   let content = {};
   let serverUrl = '';
@@ -99,12 +99,12 @@ Array.prototype.min = function () {
   let MaxNumber = [];
   let type = data.type;
   let config = {
-    volume: 6, // 量比
+    volume: 3, // 量比
     BF: 1, // 反转趋势
     bollCurr: 5, // 布林线趋势
     equilibrium: 100 // 均线分
   };
-  axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sh601002"} : {}).then(function(d) {
+  axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sz300266"} : {}).then(function(d) {
     if (d.data) {
         fileArr = d.data.filter(item => {
             return (item.codeID[2] == 6 || item.codeID[2] == 3 || item.codeID[2] == 0) && item.codeID[0] == 's';
@@ -112,7 +112,7 @@ Array.prototype.min = function () {
     }
     init(res);
   })
-  function api(codeID) {
+  function api(codeID, cb) {
     return axios.get('http://hq.sinajs.cn/list=' + codeID, {
        responseType:'arraybuffer'
     }).then(function (res) {
@@ -123,24 +123,28 @@ Array.prototype.min = function () {
         let obj = item.split('=');
         content[obj[0]] = obj[1].split('"').join('').split(';').join('').split(',')
       })
+      curr++;
+      curr * 200 >= fileArr.length && cb();
     })
   }
 
-  async function init (resSend) {
+  function init (resSend) {
     let arr = fileArr.map(item => item.codeID);
     for(let i = 0;i<arr.length; i+=200) {
       let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
-      await api(codeArr);
+      api(codeArr, cb);
       console.log('init', i, arr.length);
     }
-    for(let i = 0;i<arr.length; i++) {
-        getHtml(i, arr.length);
+    function cb () {
+        for(let i = 0;i<arr.length; i++) {
+            getHtml(i, arr.length);
+        }
+        // 发送结果
+        if (!MaxNumber.length) return;
+        emailGet(null, '追涨票评分', MaxNumber.srotGrade());
+        let Arr = MaxNumber.val;
+        resSend.send(JSON.stringify(Arr.slice(0, Number(type))));
     }
-    // 发送结果
-    if (!MaxNumber.length) return;
-    emailGet(null, '股票评分', MaxNumber.srotGrade());
-    let Arr = MaxNumber.val;
-    resSend.send(JSON.stringify(Arr.slice(0, Number(type))));
   }
 
   function getHtml(index, len){
@@ -201,6 +205,8 @@ Array.prototype.min = function () {
         'volume': Number(volume),
         'mean5': null,
         'mean10': null,
+        'mean20': null,
+        'mean30': null,
         'deal': null,
         'timeRQ': temp7,
         'status': Number(temp4) - Number(temp2)
@@ -226,6 +232,12 @@ Array.prototype.min = function () {
         if (index + 10 < k_link.length) {
             obj.mean10 = k_link.slice(index, index + 10).sum('js');
         }
+        if (index + 20 < k_link.length) {
+            obj.mean20 = k_link.slice(index, index + 20).sum('js');
+        }
+        if (index + 30 < k_link.length) {
+            obj.mean30 = k_link.slice(index, index + 30).sum('js');
+        }
     });
     consoles.log('开始scoreNumber计算分数');
     scoreNumber(k_link, item.codeID);
@@ -235,18 +247,19 @@ Array.prototype.min = function () {
     consoles.log('scoreNumber');    
     // if (code == 'sh300062') debugger
     let score = {status:0, numner:0};
-    // k_link.splice(0,1); // 测试代码去掉 n 数据
+    // k_link.splice(0,2); // 测试代码去掉 n 数据
     if (k_link.length > 2) {
         consoles.log('k_link', k_link[0]);
-        // score.numner += bollCurr(k_link);
-        score.numner += bollCurr(k_link) > 15 ? 15 : bollCurr(k_link);
-        consoles.log('bollCurr  ------>',code, score);
-        score.numner += volumeFun(k_link);
-        consoles.log('volumeFun  ------>',code, score);
-        score.numner -= equilibrium(k_link);
-        consoles.log('equilibrium  ------>',code, score);
-        // score.numner += BF(k_link); // 趋势
-        // consoles.log('BF  ------>',code, score);
+        // let Dip = doubleNeedeDip(k_link);
+        // score.numner += Dip.val;
+        // consoles.log('doubleNeedeDip  ------>',code, score);
+        // score.numner += bollCurr(k_link) > 15 ? 15 : bollCurr(k_link);
+        // consoles.log('bollCurr  ------>',code, score);
+        // score.numner += volumeFun(k_link, Dip.val);
+        // consoles.log('volumeFun  ------>',code, score);
+        // score.numner -= equilibrium(k_link, Dip.val ? Dip.sum : null);
+        // consoles.log('equilibrium  ------>',code, score);
+        score.numner += goUp(k_link);
         let name = parseInt(score.numner);
         if (name > 0) {
             if (!MaxNumber[name]) MaxNumber[name] = [];
@@ -291,60 +304,19 @@ Array.prototype.min = function () {
     return obj
   }
   // 均线
-  function equilibrium(k_link) {
+  function equilibrium(k_link, sum) {
     let nub = 0;
     let item = k_link[0];
-    if (item && item.mean5 && item.js) {
-        if (item.mean5 > item.js) {
-            nub = (item.mean5 - item.js) / item.mean5 * config.equilibrium;
+    let mean = sum ? sum : item.mean5;
+    let min = sum ? item.min : item.js;
+    if (item && mean && min) {
+        if (mean > min) {
+            nub = (mean - min) / mean * config.equilibrium;
         } else {
-            nub = (item.js - item.mean5) / item.js * config.equilibrium;
+            nub = (min - mean) / min * config.equilibrium;
         }
     }
     return nub;
-  }
-  // 反转趋势
-  function BF(k_link) {
-    let nub = 0;
-    let flag = 0;
-    let arr = [];
-    function forEach (i = 0) {
-        consoles.log('BF forEach ---->', nub);
-        let item = k_link[i];
-        if (!item || flag == 3) return;
-        arr.push(item.js);
-        if (item.mean5 && item.mean10) {
-            if (i < 2 && flag == 0) {
-                if (item.mean5 > item.mean10) {
-                    if (i == 0 && item.js > item.mean5 && item.ks < item.mean10) {
-                        nub += config.BF * 6;
-                        if (item.mean10 > item.mean20 && item.ks < item.mean20) {
-                            nub += config.BF * 3;
-                        }
-                    }
-                    nub += config.BF * 5;
-                    flag++;
-                    consoles.log('BF for1 ---->', i, nub);
-                } else {
-                    return
-                }
-            } else if (i >= 1 && flag == 1) {
-                if (item.mean5 < item.mean10) {
-                    nub += config.BF;
-                    flag++;
-                    consoles.log('BF for2 ---->', i, nub);
-                }
-            } else if (flag == 2) {
-                nub += ((item.js - arr.min().min) / 2 + arr.min().min) / k_link[0].js * config.BF * 2
-                flag++;
-                consoles.log('BF ---->', nub);
-            }
-        }
-        forEach (i + 1)
-    }
-    forEach(0);
-    consoles.log('BF ---->', nub);
-    return nub
   }
   // 价格区间记分
   function bollCurr(k_link) {
@@ -357,10 +329,10 @@ Array.prototype.min = function () {
     return nub;
   }
   // 量比记分
-  function volumeFun(k_link) {
+  function volumeFun(k_link, type) {
       // 量比加分
       let numner = 0;
-      if (k_link[0].volume && k_link[0+1].volume && k_link[0+1].volume > k_link[0].volume && k_link[0].status > 0) {
+      if (k_link[0].volume && k_link[0+1].volume && k_link[0+1].volume > k_link[0].volume && (!type || k_link[0].status)) {
           let vol = k_link[0+1].volume / k_link[0].volume;
           numner += (vol > 3 ? 3 : vol) * config.volume;
         //   numner += vol * config.volume;
@@ -378,6 +350,99 @@ Array.prototype.min = function () {
       return numner;
   }
 
+  // 双针探底
+  function doubleNeedeDip (k_link) {
+    consoles.log('doubleNeedeDip k_link ------>', k_link[0].timeRQ);
+      let num = 0;
+      let min0 = {};
+      let min1 = {};
+      function minNeede (item,n = 2) {
+        let obj = {
+            val: 0, // 下引线得分
+            min: item.min, // 最低价
+            js: 0, // 下价
+            flag: false // 是否符合引线
+        };
+        if (item.status > 0) {
+           obj.val = parseInt((item.ks - item.min) / item.min * 10000 || 0) / 100;
+           consoles.log('doubleNeedeDip obj.val ------>', obj.val);
+           obj.flag = obj.val > n;
+           obj.js = item.ks;
+        } else {
+           obj.val = parseInt((item.js - item.min) / item.min * 10000 || 0) / 100;
+           consoles.log('doubleNeedeDip obj.val ------>', obj.val);
+           obj.flag = obj.val > n;
+           obj.js = item.js;
+        }
+        return obj;
+      }
+      let [js,ks,max,min] = [[],[],[],[]];
+      k_link.forEach((item, i) => {
+        if (i<10) {
+            js.push(item.js);
+            ks.push(item.ks);
+            max.push(item.max);
+            min.push(item.min);
+        }
+      });
+      let minNmb = min.min().nub;
+      consoles.log('doubleNeedeDip minNmb1 ------>', minNmb);
+      if (minNmb != 0) {
+          min1 = minNeede(k_link[minNmb], 3); // 最低针探底
+          consoles.log('doubleNeedeDip min1 ------>', minNmb);
+          if (min1.flag) {
+            min[minNmb] = 10000000;
+            minNmb = min.min().nub;
+            consoles.log('doubleNeedeDip minNmb2 ------>', minNmb);
+            min0 = minNeede(k_link[minNmb], 2); // 最低针探底
+            if (minNmb == 0 && min0.flag) {
+                num += min0.val;
+                num += min1.val;          
+                if (min0.min > min1.min && min0.min < min1.js) {
+                    num += 10;
+                }
+                consoles.log('doubleNeedeDip + ------>', num);                
+            }
+          }
+      }
+      consoles.log('doubleNeedeDip end ------>', num);  
+      return {val:num, sum: (min1.js + min1.min) / 2}
+  }
+  // 追涨记分
+  function goUp(k_link) {
+    let nub = 0;
+    let type = 0;
+    let min0 = 0;
+    let min1 = 0;
+    if (k_link && k_link[0]) {
+        if (k_link[0].status > 0 || k_link[0].mean10 - k_link[1].mean10 < 0) return nub;
+        for(let i=0;i< (k_link.length - 1) && type < 1;i++) {
+            if (k_link[i].mean20 - k_link[i + 1].mean20 > 0) {
+                nub++;
+            } else {
+                type++;
+            }
+        }
+        // nub -= (k_link[0].min / k_link[0].mean10 - 1) * 10;
+        // if (k_link[0].mean20 - k_link[1].mean20 > 0) {
+        //     nub += 3;
+        //     if (k_link[0].mean10 - k_link[1].mean10 > 0) {
+        //         nub += 3;
+        //         if (k_link[0].mean5 - k_link[1].mean5 > 0) {
+        //             nub += 3;
+        //             if (k_link[0].status < 0 && k_link[0].mean10 > k_link[0].min) {
+        //                 nub += 10;
+        //                 nub -= (k_link[0].min / k_link[0].mean10 - 1) * 10;
+        //             }
+        //         }
+        //     }
+        // }
+    }
+    if ((k_link[0].boll.MB + k_link[0].boll.UP) / 2 < k_link[0].js) {
+        nub += k_link[0].mean5 / k_link[0].boll.DN  * config.bollCurr;
+    }
+    return nub
+  }
   // 发送邮件
   function emailGet(to, tit, text) {
     !test && email.send(to, tit, text, function (err, info) {

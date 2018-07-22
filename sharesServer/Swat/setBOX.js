@@ -71,6 +71,7 @@ module.exports = function ($) {
             'mean5': null,
             'mean10': null,
             'mean20': null,
+            'mean30': null,
             'deal': $.deal[item.codeID] || null,
             'timeRQ': temp7,
             'status': Number(temp4) - Number(temp2)
