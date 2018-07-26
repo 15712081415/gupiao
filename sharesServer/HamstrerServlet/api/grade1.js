@@ -255,8 +255,6 @@ Array.prototype.min = function () {
         consoles.log('volumeFun  ------>',code, score);
         score.numner -= equilibrium(k_link, Dip.val ? Dip.sum : null);
         consoles.log('equilibrium  ------>',code, score);
-        score.numner += BF(k_link); // 趋势
-        consoles.log('BF  ------>',code, score);
         let name = parseInt(score.numner);
         if (name > 0) {
             if (!MaxNumber[name]) MaxNumber[name] = [];
@@ -315,49 +313,7 @@ Array.prototype.min = function () {
     }
     return nub;
   }
-  // 反转趋势
-  function BF(k_link) {
-    let nub = 0;
-    let flag = 0;
-    let arr = [];
-    function forEach (i = 0) {
-        consoles.log('BF forEach ---->', nub);
-        let item = k_link[i];
-        if (!item || flag == 3) return;
-        arr.push(item.js);
-        if (item.mean5 && item.mean10) {
-            if (i < 2 && flag == 0) {
-                if (item.mean5 > item.mean10) {
-                    if (i == 0 && item.js > item.mean5 && item.ks < item.mean10) {
-                        nub += config.BF * 6;
-                        if (item.mean10 > item.mean20 && item.ks < item.mean20) {
-                            nub += config.BF * 3;
-                        }
-                    }
-                    nub += config.BF * 5;
-                    flag++;
-                    consoles.log('BF for1 ---->', i, nub);
-                } else {
-                    return
-                }
-            } else if (i >= 1 && flag == 1) {
-                if (item.mean5 < item.mean10) {
-                    nub += config.BF;
-                    flag++;
-                    consoles.log('BF for2 ---->', i, nub);
-                }
-            } else if (flag == 2) {
-                nub += ((item.js - arr.min().min) / 2 + arr.min().min) / k_link[0].js * config.BF * 2
-                flag++;
-                consoles.log('BF ---->', nub);
-            }
-        }
-        forEach (i + 1)
-    }
-    forEach(0);
-    consoles.log('BF ---->', nub);
-    return nub
-  }
+  
   // 价格区间记分
   function bollCurr(k_link) {
     consoles.log('bollCurr ---->', k_link[0].boll);

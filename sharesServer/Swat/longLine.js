@@ -85,7 +85,8 @@ module.exports = function (code, flag, $) {
           let min = $.Sday[code].min();
           let currDay = $.Sday[code][0];
           let item = $.codeData[code];
-          let maxSum = $.openVal[code].v * 1.05;
+          let minMenny = $.maxCurr[code].arr.length >= 2 ? 1.05 : 1.03;
+          let maxSum = $.openVal[code].v * minMenny;
           let minSum = $.openVal[code].v * -1.02;
           let isMax = $.openVal[code].v * 0.004 < 0.03? 0.03 : $.openVal[code].v * 0.004;
           let isMin = $.openVal[code].v * 0.004 < 0.03? 0.03 : $.openVal[code].v * 0.004;
@@ -102,7 +103,7 @@ module.exports = function (code, flag, $) {
               } else if ($.soaringMax[code] == 1 && newest < (max.max - isMax)) {
                   $.deal[item.codeID] && $.deal[item.codeID].up++;
                   let sale = '';
-                  if ($.maxCurr[code].arr.length >= 3 ||  $.openVal[code].v * 1.075 < currDay) {
+                  if ($.maxCurr[code].arr.length >= 3 ||  $.openVal[code].v * 1.07 < currDay) {
                     sale = '清仓'
                     $.flagCode[code] = true;
                   } else if ($.maxCurr[code].arr.length == 1) {
@@ -165,13 +166,14 @@ function statusFlag (k_lin) {
 module.exports.endEmail = function ($) {
     for (let item in $.codeIDarr1) {
         let code = $.codeIDarr1[item].codeID;
+        $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status": $.openVal[code] && $.openVal[code].s > 9.9 ? 1 : 0}});
         if (code && !$.flagCode[code]) {
             if (!$.openVal[code] || $.openVal[code].s < 9.9) {
                 let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
                 let toEmail = null;
                 $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
                 emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
-                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status":0}});
+                $.flagCode[code] = true;
             }
         }
     }
