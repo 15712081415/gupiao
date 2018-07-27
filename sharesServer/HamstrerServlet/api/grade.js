@@ -239,7 +239,8 @@ Array.prototype.min = function () {
     if (k_link.length > 2) {
         consoles.log('k_link', k_link[0]);
         // score.numner += bollCurr(k_link);
-        score.numner += bollCurr(k_link) > 15 ? 15 : bollCurr(k_link);
+        let bollNum = bollCurr(k_link);
+        score.numner += bollNum > 15 ? 15 : bollNum;
         consoles.log('bollCurr  ------>',code, score);
         score.numner += volumeFun(k_link);
         consoles.log('volumeFun  ------>',code, score);

@@ -136,13 +136,13 @@ $.schedule.scheduleJob('1 55 14 * * 1-5', function () { // 5 55 14 * * 1-5
 $.schedule.scheduleJob('10 55 14 * * 1-5', function () { // 5 56 14 * * 1-5
     console.log('发送最新股票评分');
     $.status = false; // 停止统计,避免占用资源
-    let list = 3;
+    let list = 3; // 买几只股
     $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade1?type=' + list).then(function (res){
         if (res) {
             let arr = res.data;
             let key = 0
             for (let name in $.flagCode) {
-                if ($.flagCode[name] === true)  key++;
+                if ($.flagCode[name] !== true)  key++;
             }
             arr.length = list - key;
             if (arr[2]) {

@@ -249,7 +249,8 @@ Array.prototype.min = function () {
         let Dip = doubleNeedeDip(k_link);
         score.numner += Dip.val;
         consoles.log('doubleNeedeDip  ------>',code, score);
-        score.numner += bollCurr(k_link) > 15 ? 15 : bollCurr(k_link);
+        let bollNum = bollCurr(k_link);
+        score.numner += bollNum > 15 ? 15 : bollNum;
         consoles.log('bollCurr  ------>',code, score);
         score.numner += volumeFun(k_link, Dip.val);
         consoles.log('volumeFun  ------>',code, score);
@@ -313,7 +314,7 @@ Array.prototype.min = function () {
     }
     return nub;
   }
-  
+
   // 价格区间记分
   function bollCurr(k_link) {
     consoles.log('bollCurr ---->', k_link[0].boll);
