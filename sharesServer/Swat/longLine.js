@@ -56,7 +56,7 @@ module.exports = function (code, flag, $) {
         if (temp4 > 0 && !$.timeSJ[code + temp7 + temp8]) {
           $.timeSJ[code + temp7 + temp8] = true
           $.https.post('http://127.0.0.1:9999/HamstrerServlet/stockAll/add', str).then(function (message) {
-              console.log(code + ':存储最新价格' + nub.toFixed(2) + '!');
+            //   console.log(code + ':存储最新价格' + nub.toFixed(2) + '!');
           }).catch(function (err) {
               console.log(err);
           });
@@ -90,7 +90,7 @@ module.exports = function (code, flag, $) {
           let minSum = $.openVal[code].v * -1.02;
           let isMax = $.openVal[code].v * 0.004 < 0.03? 0.03 : $.openVal[code].v * 0.004;
           let isMin = $.openVal[code].v * 0.004 < 0.03? 0.03 : $.openVal[code].v * 0.004;
-          console.log(newest,maxSum,isMax,minSum, isMin, 'max：', newest > maxSum, $.Sday[code].max().nub == $.Sday[code].length - 1, 'min:', newest < isMin, $.Sday[code].min().nub == $.Sday[code].length - 1);
+        //   console.log(newest,maxSum,isMax,minSum, isMin, 'max：', newest > maxSum, $.Sday[code].max().nub == $.Sday[code].length - 1, 'min:', newest < isMin, $.Sday[code].min().nub == $.Sday[code].length - 1);
           $.maxCurr[code].arr[0] || ($.maxCurr[code].arr[0] = maxSum);
           $.minCurr[code].arr[0] || ($.minCurr[code].arr[0] = minSum);
           let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';

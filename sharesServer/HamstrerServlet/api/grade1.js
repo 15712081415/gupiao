@@ -383,7 +383,7 @@ Array.prototype.min = function () {
       let minNmb = min.min().nub;
       consoles.log('doubleNeedeDip minNmb1 ------>', minNmb);
       if (minNmb != 0 && minNmb < 6) {
-          min1 = minNeede(k_link[minNmb], 3); // 最低针探底
+          min1 = minNeede(k_link[minNmb], 2.5); // 最低针探底
           consoles.log('doubleNeedeDip min1 ------>', minNmb);
           if (min1.flag) {
             min[minNmb] = 10000000;

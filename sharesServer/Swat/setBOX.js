@@ -271,3 +271,26 @@ function JudgeMax (arrData) {
     }
     return minData
   }
+
+// MACD
+function MACD(k_link) {
+    let js = k_link.map(item => item.js);
+    let obj = {
+        EMA_12: EMA(12, k_link, js),
+        EMA_26: EMA(12, k_link, js)
+    }
+    obj.DIF = obj.EMA12 - EMA26;
+    obj.EMA_MACD = null;
+}
+function EMA (nub, k_link, js) {
+    let nub = 0;
+    if (k_link[1] && k_link[1].MACD && k_link[1].MACD.EMA[nub]) {
+        nub = k_link[1].MACD['EMA_' + nub]*(nub - 1)/(nub+1)+k_link[0].js*2/(nub+1);
+    } else if (k_link[1]) {
+        nub = EMA(nub, k_link.slice(1, k_link.length), js.slice(1, js.length))*(nub - 1)/(nub+1)+k_link[0].js*2/(nub+1);
+    } else {
+        let EMA1 = js.slice(js.length - 4, js.length).sum();
+        nub = k_link[1].MACD['EMA_' + nub]*(nub - 1)/(nub+1)+k_link[0].js*2/(nub+1);
+    }
+    return nub;
+}
