@@ -186,7 +186,7 @@ $.schedule.scheduleJob('10 55 14 * * 1-5', function () { // 5 56 14 * * 1-5
     }, 50000)
 });
 // 执行任务收集信息
-// setBOX($);
+setBOX($);
 // minuteK($)
 $.schedule.scheduleJob('5 0 16 * * 1-5', function () {
     console.log('执行任务setBOX');

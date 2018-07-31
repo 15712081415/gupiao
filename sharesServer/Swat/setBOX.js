@@ -74,6 +74,7 @@ module.exports = function ($) {
             'mean30': null,
             'deal': $.deal[item.codeID] || null,
             'timeRQ': temp7,
+            'MACD': null,
             'status': Number(temp4) - Number(temp2)
         }
         o.boll = boll(item['K-Lin'], o);
@@ -92,6 +93,13 @@ module.exports = function ($) {
                     !objCF[item['K-Lin'][k].timeRQ] && k_link.push(item['K-Lin'][k]);
                     objCF[item['K-Lin'][k].timeRQ] = true;
                 }
+            }
+            if (!k_link[0].MACD) {
+                for (let j = k_link.length - 1; j >= 0; j--) {
+                    k_link[j].MACD = MACD(k_link.slice(j, k_link.length));
+                }
+            } else {
+                k_link[0].MACD = MACD(k_link);
             }
         }
         // 计算5，10均线
@@ -273,24 +281,26 @@ function JudgeMax (arrData) {
   }
 
 // MACD
+function EMA(nub, k_link, js, name) {
+    let num = 0;
+    name = name || nub;
+    if (k_link[1] && k_link[1].MACD && k_link[1].MACD['EMA_'+name]) {
+        num = k_link[1].MACD['EMA_' + name]*(nub - 1)/(nub+1)+js[0]*2/(nub+1);
+    } else if (k_link[1]) {
+        num = EMA(nub, k_link.slice(1, k_link.length), js.slice(1, js.length), name) * (nub - 1)/(nub+1)+js[0]*2/(nub+1);
+    } else {
+        num = js[0];
+    }
+    return num;
+}
 function MACD(k_link) {
     let js = k_link.map(item => item.js);
-    let obj = {
-        EMA_12: EMA(12, k_link, js),
-        EMA_26: EMA(12, k_link, js)
-    }
-    obj.DIF = obj.EMA12 - EMA26;
-    obj.EMA_MACD = null;
-}
-function EMA (nub, k_link, js) {
-    let nub = 0;
-    if (k_link[1] && k_link[1].MACD && k_link[1].MACD.EMA[nub]) {
-        nub = k_link[1].MACD['EMA_' + nub]*(nub - 1)/(nub+1)+k_link[0].js*2/(nub+1);
-    } else if (k_link[1]) {
-        nub = EMA(nub, k_link.slice(1, k_link.length), js.slice(1, js.length))*(nub - 1)/(nub+1)+k_link[0].js*2/(nub+1);
-    } else {
-        let EMA1 = js.slice(js.length - 4, js.length).sum();
-        nub = k_link[1].MACD['EMA_' + nub]*(nub - 1)/(nub+1)+k_link[0].js*2/(nub+1);
-    }
-    return nub;
+    let DEA = k_link.map(item => { return item.MACD && item.MACD.DEA ? item.MACD.EMA_DEA : 0});
+    let obj = {};
+    obj.EMA_12 = EMA(12, k_link, js);
+    obj.EMA_26 = EMA(26, k_link, js);
+    obj.EMA_DIF = (Number(obj.EMA_12) - Number(obj.EMA_26));
+    obj.EMA_DEA = 0.2 * obj.EMA_DIF + 0.8 * EMA(9, k_link, DEA, 'DEA');
+    obj.EMA_BAR = 2 * (obj.EMA_DIF - obj.EMA_DEA);
+    return obj;
 }
