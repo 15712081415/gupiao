@@ -85,7 +85,8 @@ module.exports = function (code, flag, $) {
           let min = $.Sday[code].min();
           let currDay = $.Sday[code][0];
           let item = $.codeData[code];
-          let minMenny = $.maxCurr[code].arr.length >= 2 ? 1.05 : 1.03;
+        //   let minMenny = $.maxCurr[code].arr.length >= 2 ? 1.05 : 1.02;
+          let minMenny = 1.02;
           let maxSum = $.openVal[code].v * minMenny;
           let minSum = $.openVal[code].v * -1.02;
           let isMax = $.openVal[code].v * 0.004 < 0.03? 0.03 : $.openVal[code].v * 0.004;
@@ -132,11 +133,11 @@ module.exports = function (code, flag, $) {
           }
           function mathNumber(val) {
               if (val == 1) {
-                return $.openVal[code].v * 0.01
+                return $.openVal[code].v * 0.02
               } else if (val == 2) {
-                return $.openVal[code].v * 0.003
+                return $.openVal[code].v * 0.01
               } else if (val == 3) {
-                return $.openVal[code].v * 0.001
+                return $.openVal[code].v * 0.01
               } else {
                 return 0.01
               }
