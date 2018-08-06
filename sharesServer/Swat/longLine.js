@@ -65,7 +65,7 @@ module.exports = function (code, flag, $) {
         let currEnt = parseInt((temp4 - temp3) / temp3 * 10000) / 100;
         console.log(code + '检测行情', currEnt + '%', stop);
         if (!$.openVal[code]) $.openVal[code] = {v:temp3, s: currEnt};        
-        if (currEnt < (stop < 2.5 ? -0.5 : stop) - 2.5) {
+        if (currEnt < (stop < 2 ? -2 : stop) - 2) {
             if (!$.flagCode[code]) {
                 $.flagCode[code] = true;
                 let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'%</p>';
@@ -86,7 +86,7 @@ module.exports = function (code, flag, $) {
           let currDay = $.Sday[code][0];
           let item = $.codeData[code];
         //   let minMenny = $.maxCurr[code].arr.length >= 2 ? 1.05 : 1.02;
-          let minMenny = 1.03;
+          let minMenny = 1.015;
           let maxSum = $.openVal[code].v * minMenny;
           let minSum = $.openVal[code].v * -1.02;
           let isMax = $.openVal[code].v * 0.004 < 0.03? 0.03 : $.openVal[code].v * 0.004;
@@ -96,7 +96,7 @@ module.exports = function (code, flag, $) {
           $.minCurr[code].arr[0] || ($.minCurr[code].arr[0] = minSum);
           let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
           let toEmail = null;
-          if (newest > maxSum) {
+          if (newest > maxSum || $.soaringMax[code]) {
               if (max.nub == lengths && $.soaringMax[code] == 0 && max.max > ($.maxCurr[code].arr[$.maxCurr[code].arr.length - 1] + $.maxCurr[code].nub)) {
                   emailGet(toEmail, $.codeData[code].name + '[' + code + ']:今日飙升中', '当前价：' + $.Sday[code][lengths].toFixed(2) + '当日平均值：' + mean.toFixed(2) + ';当日最高：' + max.max.toFixed(2) + ';上行：' + maxSum.toFixed(2) + ';上压：' + $.maxCurr[code].nub);
                   $.soaringMax[code] = 1;
@@ -118,7 +118,7 @@ module.exports = function (code, flag, $) {
                   $.maxCurr[code].nub = $.maxCurr[code].nub + mathNumber($.maxCurr[code].arr.length);
                   $.maxCurr[code].arr.push(max.max);
               }
-          } else if (newest < minSum) {
+          } else if (newest < minSum || $.soaringMin[code]) {
               if (min.nub == lengths && $.soaringMin[code] == 0 && min.min < ($.minCurr[code].arr[$.minCurr[code].arr.length - 1] - $.minCurr[code].nub)) {
                 //   emailGet(toEmail, $.codeData[code].name + '[' + code + ']:今日下降中', '当前价：' + $.Sday[code][lengths].toFixed(2) + '当日平均值：' + mean.toFixed(2) + ';当日最低：' + min.min.toFixed(2) + ';下行：' + minSum.toFixed(2) + ';下压：' + $.minCurr[code].nub);
                   $.soaringMin[code] = 1;
@@ -133,7 +133,7 @@ module.exports = function (code, flag, $) {
           }
           function mathNumber(val) {
               if (val == 1) {
-                return $.openVal[code].v * 0.01
+                return $.openVal[code].v * 0.005
               } else if (val == 2) {
                 return $.openVal[code].v * 0.01
               } else if (val == 3) {

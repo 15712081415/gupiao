@@ -92,14 +92,6 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 25; // 测试股票几率 ... 0为不测试
-  let testCurr = 1; // 测试股票当前索引
-  let statusUp = {
-      UP: [],
-      DN: [],
-      all: 0,
-      ok: 0
-  };
   let fileArr = [];
   let content = {};
   let serverUrl = '';
@@ -118,10 +110,9 @@ Array.prototype.min = function () {
             return (item.codeID[2] == 6 || item.codeID[2] == 3 || item.codeID[2] == 0) && item.codeID[0] == 's';
         })
     }
-    if (testData) res.send();
-    init();
+    init(res);
   })
-  function api(codeID) {
+  function api(codeID, cb) {
     return axios.get('http://hq.sinajs.cn/list=' + codeID, {
        responseType:'arraybuffer'
     }).then(function (res) {
@@ -137,63 +128,24 @@ Array.prototype.min = function () {
     })
   }
 
-    function init () {
-        let arr = fileArr.map(item => item.codeID);
-        for(let i = 0;i<arr.length; i+=200) {
-            let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
-            api(codeArr);
-            console.log('init', i, arr.length);
-        }
+  function init (resSend) {
+    let arr = fileArr.map(item => item.codeID);
+    for(let i = 0;i<arr.length; i+=200) {
+      let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
+      api(codeArr, cb);
+      console.log('init', i, arr.length);
     }
-    function cb (flag) {
-        if (flag) {
-            MaxNumber = [];
-        }
-        let arr = fileArr.map(item => item.codeID);
+    function cb () {
         for(let i = 0;i<arr.length; i++) {
             getHtml(i, arr.length);
         }
         // 发送结果
-        let str = MaxNumber.srotGrade();
-        console.log('testData', testData, testCurr);
-        if (testData) {
-            if (testData == testCurr - 1) {
-                emailGet(null, '均线交叉股票评分---测试数据', JSON.stringify(statusUp).split('{').join('<br />{').split(']],').join(']],<br /><br />'));
-            } else {
-                let Arr = MaxNumber.val;
-                let a = Arr.slice(0, Number(type));
-                statusUp.all += a.length;
-                let up = a.filter(item => item.status).map(item => {
-                    return {
-                        '股票代码': item.code,
-                        '最小涨幅': item.min,
-                        '最大涨幅': item.max,
-                        '收盘涨幅': item.upNub,
-                        '日期': item.timeRQ
-                    }
-                });
-                let dn = a.filter(item => !item.status).map(item => {
-                    return {
-                        '股票代码': item.code,
-                        '最小涨幅': item.min,
-                        '最大涨幅': item.max,
-                        '收盘涨幅': item.upNub,
-                        '日期': item.timeRQ
-                    }
-                });
-                up.length && statusUp.UP.push(up);
-                dn.length && statusUp.DN.push(dn);
-                statusUp.ok += a.filter(item => item.status).length;
-                testCurr++;
-                cb(true);
-            }
-        } else {
-            if (!MaxNumber.length) return;
-            emailGet(null, '追涨票评分', str);
-            let Arr = MaxNumber.val;
-            res.send(JSON.stringify(Arr.slice(0, Number(type))));
-        }
+        if (!MaxNumber.length) return;
+        emailGet(null, '追涨票评分', MaxNumber.srotGrade());
+        let Arr = MaxNumber.val;
+        resSend.send(JSON.stringify(Arr.slice(0, Number(type))));
     }
+  }
 
   function getHtml(index, len){
     console.log('indexKS', index, len);
@@ -296,32 +248,24 @@ Array.prototype.min = function () {
     consoles.log('scoreNumber');    
     // if (code == 'sh300062') debugger
     let score = {status:0, numner:0};
-    let k__link = testData ? k_link.slice(testCurr, k_link.length) : k_link; // 测试代码去掉 n 数据
-    if (k__link.length > 2) {
-        consoles.log('k__link', k__link[0]);
-        // let Dip = doubleNeedeDip(k__link);
+    k_link = k_link.slice(10, k_link.length); // 测试代码去掉 n 数据
+    if (k_link.length > 2) {
+        consoles.log('k_link', k_link[0]);
+        // let Dip = doubleNeedeDip(k_link);
         // score.numner += Dip.val;
         // consoles.log('doubleNeedeDip  ------>',code, score);
-        score.numner += goUp(k__link);
-        // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
-        // score.numner += bollCurr(k__link);
+        score.numner += goUp(k_link);
+        // score.numner > 0 && (score.numner += bollCurr(k_link) > 15 ? 15 : bollCurr(k_link));
+        // score.numner += bollCurr(k_link);
         // consoles.log('bollCurr  ------>',code, score);
-        // score.numner += volumeFun(k__link);
+        // score.numner += volumeFun(k_link);
         // consoles.log('volumeFun  ------>',code, score);
-        // score.numner -= equilibrium(k__link, Dip.val ? Dip.sum : null);
+        // score.numner -= equilibrium(k_link, Dip.val ? Dip.sum : null);
         // consoles.log('equilibrium  ------>',code, score);
         let name = parseInt(score.numner);
         if (name > 0) {
             if (!MaxNumber[name]) MaxNumber[name] = [];
-            MaxNumber[name].push({
-                code: code,
-                nub: score.numner,
-                max: parseInt((k_link[testCurr - 1].max / k_link[testCurr].js - 1) * 10000) / 100,
-                min: parseInt((k_link[testCurr - 1].min / k_link[testCurr].js - 1) * 10000) / 100,
-                upNub: parseInt((k_link[testCurr - 1].js / k_link[testCurr].js - 1) * 10000) / 100,
-                status: k_link[testCurr - 1].js > k_link[testCurr].js,
-                timeRQ: k__link[0].timeRQ
-            });
+            MaxNumber[name].push({code: code, nub: score.numner, timeRQ: k_link[0].timeRQ});
         }
     }
   }
@@ -486,17 +430,48 @@ Array.prototype.min = function () {
             return 0;
         }
         if (k_link[0].mean5 > k_link[0].mean10) return 0;
-
-        if (k_link[0].mean20 - k_link[1].mean20 < 0) {
-            nub += 5;
-        }
-        if (k_link[0].MACD.EMA_DIF - k_link[1].MACD.EMA_DIF > 0) {
-            nub += 5;
-        }
-        if (k_link[0].MACD.EMA_DEA - k_link[1].MACD.EMA_DEA < 0) {
-            nub += 5;
-        }
-        if (k_link[0].status > 0 && k_link[0].mean5 > k_link[1].mean5) {
+        if (k_link[0])
+        // k_link.forEach((item, i) => {
+        //     js.push(item.js);
+        //     ks.push(item.ks);
+        //     max.push(item.max);
+        //     min.push(item.min);
+        // });
+        // let minNmb = min.min().nub;
+        // if (minNmb > 6) {
+        //     return 0;
+        // }
+        // return 1;
+        // if (k_link[0].mean5 - k_link[0].mean5 < 0 && k_link[1].mean5 - k_link[1].mean5 > 0) {
+        //     nub += 5;
+        // }
+        // if (k_link[0].mean5 - k_link[1].mean5 > 0 && k_link[1].mean5 - k_link[2].mean5 < 0) {
+        //     nub += 20;
+        // }
+        // if (k_link[0].mean20 - k_link[0].mean10 > 0) {
+        //     if (k_link[0].mean10 - k_link[1].mean10 > 0) {
+        //         nub += 10;
+        //     }
+        //     if (k_link[0].mean20 - k_link[1].mean20 < 0) {
+        //         nub += 10;
+        //     } else if (k_link[1].mean20 - k_link[2].mean20 < 0) {
+        //         nub += 30;
+        //     }
+        // }
+        // if (k_link[0].mean20 - k_link[1].mean20 < 0 || k_link[0].mean20 < k_link[0].mean5) {
+        //     return 0
+        // }
+        // if (k_link[0].mean5 - k_link[1].mean5 > 0) {
+        //     nub += 10;
+        // } else {
+        //     return 0
+        // }
+        // if (k_link[0].mean20 - k_link[1].mean20 < 0) {
+        //     nub += 10;
+        // } else {
+        //     return 0
+        // }
+        if (k_link[0].status < 0 && k_link[0].mean5 > k_link[1].mean5) {
             nub += 10;
         }
         if (k_link[0].mean5 < k_link[0].mean10 && k_link[1].mean5 < k_link[1].mean10) {
@@ -508,6 +483,10 @@ Array.prototype.min = function () {
         } else {
             return 0
         }
+        // let eam = (k_link[0].mean5 + k_link[0].mean10 + k_link[0].mean20) / 3;
+        // nub -= (eam > k_link[0].mean5 ? eam / k_link[0].mean5 - 1 : k_link[0].mean5 / eam - 1) * 100;
+        // nub -= (eam > k_link[0].mean10 ? eam / k_link[0].mean10 - 1 : k_link[0].mean10 / eam - 1) * 100;
+        // nub -= (eam > k_link[0].mean20 ? eam / k_link[0].mean20 - 1 : k_link[0].mean20 / eam - 1) * 100;
     }
     return nub
   }

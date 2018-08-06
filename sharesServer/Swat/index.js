@@ -137,7 +137,7 @@ $.schedule.scheduleJob('10 55 14 * * 1-5', function () { // 5 56 14 * * 1-5
     console.log('发送最新股票评分');
     $.status = false; // 停止统计,避免占用资源
     let list = 3; // 买几只股
-    $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade4?type=' + list).then(function (res){
+    $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade2?type=' + list).then(function (res){
         if (res) {
             let arr = res.data;
             let key = 0
@@ -163,7 +163,7 @@ $.schedule.scheduleJob('10 55 14 * * 1-5', function () { // 5 56 14 * * 1-5
                     $.io.sockets.emit('news',{content: '代码：' + numCode, title: '买贰'});
                     let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';
                     emailGet(null, '[' + arr[1].code + ']:买贰', nubMon);
-                }, 2000);
+                }, 4000);
             }
             if (arr[0]) {
                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[0].code},"setter":{"status":1}}).then(res=>{
@@ -174,7 +174,7 @@ $.schedule.scheduleJob('10 55 14 * * 1-5', function () { // 5 56 14 * * 1-5
                     $.io.sockets.emit('news',{content: '代码：' + numCode, title: '全仓'});
                     let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';
                     emailGet(null, '[' + arr[0].code + ']:全仓', nubMon);
-                }, 4000);
+                }, 8000);
             }
         }
         $.status = true; // 恢复统计
@@ -186,7 +186,7 @@ $.schedule.scheduleJob('10 55 14 * * 1-5', function () { // 5 56 14 * * 1-5
     }, 50000)
 });
 // 执行任务收集信息
-setBOX($);
+// setBOX($);
 // minuteK($)
 $.schedule.scheduleJob('5 0 16 * * 1-5', function () {
     console.log('执行任务setBOX');

@@ -235,7 +235,7 @@ Array.prototype.min = function () {
     consoles.log('scoreNumber');    
     // if (code == 'sh300062') debugger
     let score = {status:0, numner:0};
-    // k_link.splice(0,2); // 测试代码去掉 n 数据
+    k_link = k_link.slice(1, k_link.length); // 测试代码去掉 n 数据
     if (k_link.length > 2) {
         consoles.log('k_link', k_link[0]);
         score.numner += bollCurr(k_link);
