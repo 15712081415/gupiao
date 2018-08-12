@@ -57,7 +57,7 @@ module.exports = function ($) {
 
 function boll(k_link) {
   let MA = 0, MD = 0, MB = 0, UP = 0, DN = 0, mean = 0, sum = 0, arr = [], i1 = 0, k1 = 0, k2 = 0;
-  for (let i = 0; i < k_link.length && i < 20; i++) {
+  for (let i = 0; i < k_link.length && i < 60; i++) {
       MA += Number(k_link[i])
       arr.push(Number(k_link[i]))
       i1++

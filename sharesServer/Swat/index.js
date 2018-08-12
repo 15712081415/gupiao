@@ -78,7 +78,7 @@ function loading() {
                     item.status == 3 && arr3.push(item)
                 } else {
                     item.status == 1 && arr1.push(item)
-                    item.status == 2 && arr2.push(item)
+                    item.status == 2 && arr3.push(item)
                 }
             }
         }
@@ -179,11 +179,6 @@ $.schedule.scheduleJob('10 55 14 * * 1-5', function () { // 5 56 14 * * 1-5
         }
         $.status = true; // 恢复统计
     });
-    setTimeout(() => {
-        $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade?type=3')
-        $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade2?type=3')
-        $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade3?type=3')
-    }, 50000)
 });
 // 执行任务收集信息
 // setBOX($);

@@ -2,7 +2,7 @@ let email = require('../getemail');
 // let indexNum = 0
 module.exports = function (code, flag, $, itemIndex) {
   // console.log('HKstup', code, flag)
-  $.https.get('http://hq.sinajs.cn/list=' + 'rt_' + code).then(res => {
+  $.https.get('http://hq.sinajs.cn/list=' + (code.indexOf('hk') === -1 ? code : 'rt_' + code)).then(res => {
         let data = res.data.split('=')[1].split('"').join('').split(';').join('').split(',');
         let [
         temp1, // 股票名称
@@ -13,31 +13,39 @@ module.exports = function (code, flag, $, itemIndex) {
         temp6, // 最低价
         temp7, // 日期
         temp8 // 时间
-        ] = [
-        data[1],
-        data[2],
-        data[3],
-        data[6],
-        data[4],
-        data[5],
-        data[17],
-        data[18]
-        ]
-        if (Number(temp4) == 0) {
+        ] = code.indexOf('hk') === -1 ? [
+        data[0] || 0,
+        Number(data[1] || 0),
+        Number(data[2] || 0),
+        Number(data[3] || 0),
+        Number(data[4] || 0),
+        Number(data[5] || 0),
+        data[30] || 0,
+        data[31] || 0
+        ] : [
+        data[1] || 0,
+        Number(data[2] || 0),
+        Number(data[3] || 0),
+        Number(data[6] || 0),
+        Number(data[4] || 0),
+        Number(data[5] || 0),
+        data[17] || 0,
+        data[18] || 0
+        ];
+        if (temp4 == 0) {
             return
         }
-        let nub = Number(temp4);
+        let nub = temp4;
         let name = temp1 + '[' + code + ']';
         let str = {
             'name': name,
             'daima': code,
-            'dangqianjiage': Number(temp4),
+            'dangqianjiage': temp4,
             'timeRQ': temp7,
             'timeSJ': temp8
         };
         $.timeRQ = temp7;
-        // calculatingData(code, temp1)
-        if (Number(temp4) > 0 && !$.timeSJ[code + temp7 + temp8]) {
+        if (temp4 > 0 && !$.timeSJ[code + temp7 + temp8]) {
           $.timeSJ[code + temp7 + temp8] = true
           $.https.post('http://127.0.0.1:9999/HamstrerServlet/stockAll/add', str).then(function (message) {
               console.log(code + ':存储最新价格' + nub.toFixed(2) + '!');
@@ -54,13 +62,6 @@ module.exports = function (code, flag, $, itemIndex) {
         }
     });
     function calculatingData(code, name) {
-      // console.log(code + ':分析价格!');
-// --------------------------------------------------------
-      // if (itemData.max().nub == itemData.length) {
-      //   $.deal[code].status = true
-      // } else if (itemData.min().nub == itemData.length) {
-      //   $.deal[code].status = false
-      // }
       let data = {
         stor: { timeRQ: -1, timeSJ: -1 },
         data: {
@@ -71,12 +72,7 @@ module.exports = function (code, flag, $, itemIndex) {
       $.https
       .post('http://127.0.0.1:9999/HamstrerServlet/stockAll/find', data)
       .then(d => {
-        _MACD(d)
-        // if ($.codeData[code].status == 3) {
-        //   d.data = d.data.slice(350 - indexNum, d.length)
-        //   indexNum++
-        //   _MACD(d)
-        // }
+        _MACD(d);
       })
       // macd分析价格
       function _MACD (d) {
@@ -106,10 +102,22 @@ module.exports = function (code, flag, $, itemIndex) {
             $.codeIDarr3[0].codeID == code && ($.EPS = EPS)
           }
           let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
+          let upStr = '全仓';
+          if ($.deal[code].up == 0) {
+            upStr = '买叁';
+          } else if ($.deal[code].up == 1) {
+            upStr = '买贰';
+          }
+          let dowStr = '全仓';
+          if ($.deal[code].dow == 0) {
+            dowStr = '买叁';
+          } else if ($.deal[code].dow == 1) {
+            dowStr = '买贰';
+          }
           if (!$.deal[code].info && $.codeIDarr3[0].codeID == code) { // 空仓
             console.log(code + '空仓', list[0].M1.toFixed(2), list[0].M2.toFixed(2), list[0].M.toFixed(2), $.EPS, $.HKflag)
             if (((list[0].M1 < list[0].M2 && (list[0].M - list[0].M2) > 0) || (list[0].M > list[0].M1 && list[0].M1 > list[0].M2)) && !$.HKflag) {
-              emailGet(null, $.codeData[code].name + '[' + code + ']:全仓', '当前价：' + list[0].M + nubMon);
+              emailGet(null, $.codeData[code].name + '[' + code + ']:' + upStr, '当前价：' + list[0].M + nubMon);
               let bottom = []
               for (let i = 0; i < list.length && (list[i].M1 < list[i].M2 || i < 5); i++) {
                 bottom.push(list[i].M)
@@ -126,7 +134,7 @@ module.exports = function (code, flag, $, itemIndex) {
             if (list[0].M - $.deal[code].info.bottom >= 0) {
               if ((list[0].M - $.deal[code].info.M) / $.deal[code].info.M > 0.005) {
                 if (list[0].M < list[0].M1 && list[1].M < list[1].M1) {
-                  emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', '当前价：' + list[0].M + nubMon);
+                  emailGet(null, $.codeData[code].name + '[' + code + ']:' + dowStr, '当前价：' + list[0].M + nubMon);
                   $.deal[code].info = null
                   $.HKflag = false
                 }

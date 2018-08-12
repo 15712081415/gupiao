@@ -104,7 +104,7 @@ module.exports = function (code, flag, $) {
               } else if ($.soaringMax[code] == 1 && newest < (max.max - isMax)) {
                   $.deal[item.codeID] && $.deal[item.codeID].up++;
                   let sale = '';
-                  if ($.maxCurr[code].arr.length >= 3 ||  $.openVal[code].v * 1.07 < currDay) {
+                  if ($.maxCurr[code].arr.length >= 3 ||  $.openVal[code].v * 1.05 < currDay) {
                     sale = '清仓'
                     $.flagCode[code] = true;
                   } else if ($.maxCurr[code].arr.length == 1) {

@@ -75,6 +75,7 @@ module.exports = function ($) {
             'deal': $.deal[item.codeID] || null,
             'timeRQ': temp7,
             'MACD': null,
+            'KDJ': null,
             'status': Number(temp4) - Number(temp2)
         }
         o.boll = boll(item['K-Lin'], o);
@@ -94,26 +95,34 @@ module.exports = function ($) {
                     objCF[item['K-Lin'][k].timeRQ] = true;
                 }
             }
-            if (!k_link[0].MACD) {
+            if (!k_link[1].MACD) {
                 for (let j = k_link.length - 1; j >= 0; j--) {
                     k_link[j].MACD = MACD(k_link.slice(j, k_link.length));
                 }
             } else {
                 k_link[0].MACD = MACD(k_link);
             }
+            if (!k_link[1].KDJ) {
+                for (let j = k_link.length - 9; j >= 0; j--) {
+                    k_link[j].KDJ = KDJ(k_link.slice(j, k_link.length));
+                }
+            } else {
+                k_link[0].KDJ = KDJ(k_link);
+            }
         }
         // 计算5，10均线
-        k_link.forEach((obj, index) => {
-            if (index + 5 < k_link.length) {
-                obj.mean5 = k_link.slice(index, index + 5).sum('js');
-            }
-            if (index + 10 < k_link.length) {
-                obj.mean10 = k_link.slice(index, index + 10).sum('js');
-            }
-            if (index + 20 < k_link.length) {
-                obj.mean20 = k_link.slice(index, index + 20).sum('js');
-            }
-        });
+        if (5 < k_link.length) {
+            k_link[0].mean5 = k_link.slice(0, 5).sum('js');
+        }
+        if (10 < k_link.length) {
+            k_link[0].mean10 = k_link.slice(0, 10).sum('js');
+        }
+        if (20 < k_link.length) {
+            k_link[0].mean20 = k_link.slice(0, 20).sum('js');
+        }
+        if (30 < k_link.length) {
+            k_link[0].mean30 = k_link.slice(0, 30).sum('js');
+        }
         mean10 = mean10.sum();
         min10 = min10.min().min;
         max10 = max10.max().max;
@@ -303,4 +312,35 @@ function MACD(k_link) {
     obj.EMA_DEA = 0.2 * obj.EMA_DIF + 0.8 * EMA(9, k_link, DEA, 'DEA');
     obj.EMA_BAR = 2 * (obj.EMA_DIF - obj.EMA_DEA);
     return obj;
+}
+
+
+// KDJ
+function KDJ (k_link, key) {
+    let [max, min] = [k_link[0].max,k_link[0].min]
+    let obj = {
+        RSV: 0,
+        K: 50,
+        D: 50,
+        J: 50
+    };
+    if (k_link[8]) {
+        for (let i=1;i<9;i++) {
+            if (k_link[i].max > max) max = k_link[i].max;
+            if (k_link[i].min < min) min = k_link[i].min;
+        }
+        obj.RSV = (k_link[0].js-min)/(max-min)*100;
+        if (k_link[1].KDJ && k_link[1].KDJ.k) {
+            obj.K = 2 / 3 * k_link[1].KDJ.k+ 1 / 3 * obj.RSV;
+        } else {
+            obj.K = 2/3*KDJ(k_link.slice(1, k_link.length), 'K')+1/3*obj.RSV;
+        }
+        if (k_link[1].KDJ && k_link[1].KDJ.D) {
+            obj.D = 2 / 3 * k_link[1].KDJ.D+ 1 / 3 * obj.K;
+        } else {
+            obj.D = 2/3*KDJ(k_link.slice(1, k_link.length), 'D')+1/3*obj.K;
+        }
+        obj.J = 3 * obj.K - 2 * obj.D;
+    }
+    return key ? obj[key] : obj;
 }
