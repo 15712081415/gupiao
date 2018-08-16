@@ -513,7 +513,10 @@ Array.prototype.min = function () {
         if (k_link[0].js > k_link[0].mean20) {
             nub += 5;
         }
-        if (k_link[0].mean20 - k_link[1].mean20 < 0) {
+        if (k_link[0].mean20 - k_link[1].mean20 > 0) {
+            nub += 5;
+        }
+        if (k_link[0].mean30 - k_link[1].mean30 > 0) {
             nub += 5;
         }
         if (k_link[0].MACD.EMA_DIF - k_link[1].MACD.EMA_DIF > 0) {
@@ -697,7 +700,7 @@ function KDJ (k_link, key) {
         } else {
             obj.D = 2/3*KDJ(k_link.slice(1, k_link.length), 'D')+1/3*obj.K;
         }
-        obj.J = 3 * obj.D - 2 * obj.K;
+        obj.J = 3 * obj.K - 2 * obj.D;
     }
     return key ? obj[key] : obj;
 }

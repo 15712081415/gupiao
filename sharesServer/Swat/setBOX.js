@@ -2,25 +2,52 @@ module.exports = function ($) {
   let current = 0;
   let arrDataCode = [];
   let data = null;
+  let fileArr = [];
+  let content = {};
+  let curr = 0;
   $.status = {};
-  async function stockFind(d) {
-      for (let i = 0; i < d.data.length; i++) {
-        let item = d.data[i];
-        if (item) {
-            await lookData(i, d.data.length, item);
-            console.log('item', i);
-        }
-      }
+  function api(codeID) {
+    $.https.get('http://hq.sinajs.cn/list=' + codeID, {
+//        responseType:'arraybuffer'
+    }).then(function (res) {
+    //   let str = iconv.decode(res.data, 'gbk');
+      let strArr = res.data.split('var hq_str_');
+      strArr.splice(0,1);
+      strArr.forEach(item => {
+        let obj = item.split('=');
+        content[obj[0]] = obj[1].split('"').join('').split(';').join('').split(',')
+      })
+      curr++;
+      curr * 200 >= fileArr.length && cb();
+    })
   }
+  function stockFind() {
+    let arr = fileArr.map(item => item.codeID);
+    for(let i = 0;i<arr.length; i+=200) {
+        let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
+        api(codeArr);
+        console.log('init', i, arr.length);
+    }
+  }
+
 //   $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', {"codeID":"sh600240"}).then(function (d) {
   $.https.get('http://127.0.0.1:9999/HamstrerServlet/stock/find').then(function (d) {
-    stockFind(d)
+    fileArr = d.data;
+    stockFind();
   });
+  function cb (flag) {
+    if (flag) {
+        MaxNumber = [];
+    }
+    let arr = fileArr.map(item => item.codeID);
+    getApi(0, arr.length);
+}
   // 收集当天信息
-  function lookData(index, len, item) {
-    async function getApi(res) {
+    function getApi(index, len) {
+        if (index >= len) return;
         console.log('lookData', index, len);      
-        let data = res.data.split('=')[1].split('"').join('').split(';').join('').split(',');
+        let item = fileArr[index];    
+        let data = content[item.codeID];
         let [
         temp1, // 股票名称
         temp2, // 今日开盘价
@@ -54,7 +81,7 @@ module.exports = function ($) {
         ]
         if (Number(temp4) == 0) {
             current++
-            lookData(index + 1, len)
+            getApi(index+1, len);
             return;
         }
         let code = item.codeID;
@@ -95,7 +122,7 @@ module.exports = function ($) {
                     objCF[item['K-Lin'][k].timeRQ] = true;
                 }
             }
-            if (!k_link[1].MACD) {
+            if (k_link[1] && !k_link[1].MACD) {
                 for (let j = k_link.length - 1; j >= 0; j--) {
                     k_link[j].MACD = MACD(k_link.slice(j, k_link.length));
                 }
@@ -140,26 +167,21 @@ module.exports = function ($) {
         };
         console.log('edit ->', index);
         if (obj.max) {
-            await editData(item.codeID, obj, index);
+            editData(item.codeID, obj, index, len);
+        } else {
+            getApi(index+1, len);
         }
-      }
-
-      return $.https.get('http://hq.sinajs.cn/list=' + item.codeID, {
-          'responseType': 'text/plain;charset=utf-8',
-          'header': 'text/plain;charset=utf-8'
-      }).then(getApi).catch(err => {
-        !$.status[index + len] && lookData(index, len, item);
-        $.status[index + len] = true;
-      });
-  }
-  function editData (codeID, obj, index) {
+    }
+  function editData (codeID, obj, index, len) {
       return $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit', {
           where: { codeID: codeID },
           setter: obj
       }).then(function (res) {
           console.log('成功 ' + codeID + '-->', index);
+          getApi(index+1, len);
       }).catch(function (err) {
           console.log('失败 ', codeID + '-->', index);
+          getApi(index+1, len);
       })
   }
 }
