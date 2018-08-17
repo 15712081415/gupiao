@@ -2,7 +2,7 @@ let email = require('../getemail');
 let buy = ['买伍','买肆','买叁','买贰','全仓'];
 let sell = [null,'清仓','清贰','清叁','清肆','清伍'];
 module.exports = function (code, flag, $) {
-  console.log('stup', code, flag)
+  console.log('stup', code, flag);
   $.https.get('http://hq.sinajs.cn/list=' + (code.indexOf('hk') === -1 ? code : 'rt_' + code)).then(res => {
         let data = res.data.split('=')[1].split('"').join('').split(';').join('').split(',');
         let [
@@ -90,9 +90,9 @@ module.exports = function (code, flag, $) {
                   $.soaringMax[code] = 0;
                   item.curr = $.Sday[code][lengths].toFixed(2);
                   $.Sday[code] = [item.curr];
-                  emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + sell[item.currLength], '当前价：' + $.Sday[code][lengths].toFixed(2));
+                  emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + sell[item.currLength], '当前价：' + $.Sday[code][0]);
                   $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[item.currLength]});
-                  item.currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][lengths].toFixed(2),"currLength": item.currLength--}});
+                  item.currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": item.currLength--}});
               }
           } else if (newest < minSum || $.soaringMin[code]) {
               if ($.soaringMin[code] == 0) {
@@ -104,9 +104,9 @@ module.exports = function (code, flag, $) {
                   $.soaringMin[code] = 0;
                   item.curr = $.Sday[code][lengths].toFixed(2);
                   $.Sday[code] = [item.curr];
-                  emailGet(null, $.codeData[code].name + '[' + code + ']:' + buy[item.currLength], '当前价：' + $.Sday[code][$.Sday[code].length - 1].toFixed(2));
+                  emailGet(null, $.codeData[code].name + '[' + code + ']:' + buy[item.currLength], '当前价：' + $.Sday[code][0]);
                   $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[item.currLength]});
-                  item.currLength < 5 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][lengths].toFixed(2),"currLength": item.currLength++}});
+                  item.currLength < 5 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": item.currLength++}});
               }
           }
       }
@@ -124,12 +124,28 @@ function emailGet(to, tit, text) {
   })
 }
 
-module.exports.endEmail = function ($) {
-    for (let item in $.codeIDarr2) {
-        if ($.codeIDarr2[item].codeID) {
-            let code = $.codeIDarr2[item].codeID;
-            let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
-            emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', '当前价：' + $.Sday[code][$.Sday[code].length - 1].toFixed(2) + nubMon);
+module.exports.endEmail = function ($) { // 尾盘结束监听
+    for (let key in $.codeIDarr2) {
+        if ($.codeIDarr2[key].codeID) {
+            let item = $.codeIDarr2[key];
+            let lengths = $.Sday[code].length - 1;
+            let code = $.codeIDarr2[key].codeID;
+            if ($.soaringMin[code] == 1) {
+                $.soaringMin[code] = 0;
+                item.curr = $.Sday[code][lengths].toFixed(2);
+                $.Sday[code] = [item.curr];
+                emailGet(null, $.codeData[code].name + '[' + code + ']:' + buy[item.currLength], '当前价：' + $.Sday[code][0]);
+                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[item.currLength]});
+                item.currLength < 5 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": item.currLength++}});
+            }
+            if ($.soaringMax[code] == 1) {
+                $.soaringMax[code] = 0;
+                item.curr = $.Sday[code][lengths].toFixed(2);
+                $.Sday[code] = [item.curr];
+                emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + sell[item.currLength], '当前价：' + $.Sday[code][0]);
+                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[item.currLength]});
+                item.currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": item.currLength--}});
+            }
         }
     }
 }

@@ -129,7 +129,7 @@ module.exports = function ($) {
             } else {
                 k_link[0].MACD = MACD(k_link);
             }
-            if (!k_link[1].KDJ) {
+            if (k_link[1] && !k_link[1].KDJ) {
                 for (let j = k_link.length - 9; j >= 0; j--) {
                     k_link[j].KDJ = KDJ(k_link.slice(j, k_link.length));
                 }
