@@ -515,8 +515,10 @@ Array.prototype.min = function () {
         }
         if (k_link[0].mean20 - k_link[1].mean20 > 0) {
             nub += 5;
+        } else {
+            return 0
         }
-        if (k_link[0].mean30 - k_link[1].mean30 > 0) {
+        if (k_link[0].mean30 && k_link[1].mean30 && k_link[0].mean30 - k_link[1].mean30 > 0) {
             nub += 5;
         }
         if (k_link[0].MACD.EMA_DIF - k_link[1].MACD.EMA_DIF > 0) {

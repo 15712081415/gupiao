@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 20; // 测试股票几率 ... 0为不测试
+  let testData = 0; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -321,8 +321,8 @@ Array.prototype.min = function () {
         // let Dip = doubleNeedeDip(k__link);
         // score.numner += Dip.val;
         // consoles.log('doubleNeedeDip  ------>',code, score);
-        // score.numner += goUp(k__link);
-        score.numner += kdjUp(k__link);
+        score.numner += goUp(k__link);
+        // score.numner += kdjUp(k__link);
         // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
         // score.numner += bollCurr(k__link);
         // consoles.log('bollCurr  ------>',code, score);
@@ -498,54 +498,34 @@ Array.prototype.min = function () {
   // 追涨记分
   function goUp(k_link) {
     let nub = 0;
-    let type = 0;
-    let min0 = 0;
-    let min1 = 0;
-    let [js,ks,max,min] = [[],[],[],[]];
-    k_link.forEach((item, i) => {
-        if (i < 5) {
-            js.push(item.js);
-            ks.push(item.ks);
-            max.push(item.max);
-            min.push(item.min);
+    if (k_link[0] && k_link[1]) {
+        if (k_link[0].mean5 > k_link[1].mean5) {
+            nub += 3;
         }
-    });
-    if (k_link && k_link[0]&& k_link[1]) {
-        if (k_link[0].mean5 > k_link[0].mean10) return 0;
-        if (k_link[0].js / k_link[1].js > 1.03) return 0;
-        if (k_link[0].js > k_link[0].mean20) {
-            nub += 5;
+        if (k_link[0].mean10 > k_link[1].mean10) {
+            nub += 3;
         }
-        if (k_link[0].mean20 - k_link[1].mean20 < 0) {
-            nub += 5;
+        if (k_link[0].mean20 > k_link[1].mean20) {
+            nub += 3;
         }
-        if (k_link[0].MACD.EMA_DIF - k_link[1].MACD.EMA_DIF > 0) {
-            nub += 5;
+        if (k_link[0].mean5 > k_link[1].mean10) {
+            nub += 3;
         }
-        if (k_link[0].MACD.EMA_DEA - k_link[1].MACD.EMA_DEA < 0) {
-            nub += 5;
+        if (k_link[0].mean10 > k_link[1].mean20) {
+            nub += 3;
         }
-        if (k_link[0].max < k_link[1].max) {
-            nub += 5;
+        if (k_link[0].status > 0) {
+            nub += 3;
         }
-        if (k_link[0].js > k_link[1].min) {
-            nub += 5;
+        if (k_link[0].KDJ && k_link[1].KDJ && k_link[0].KDJ.J > k_link[1].KDJ.J) {
+            nub += 3;
         }
-        if (k_link[0].status > 0 && k_link[0].mean5 > k_link[1].mean5) {
-            nub += 10;
+        if (k_link[0].MACD && k_link[1].MACD && k_link[0].MACD.EMA_DIF > k_link[1].MACD.EMA_DIF) {
+            nub += 3;
         }
-        if (k_link[0].min < k_link[1].min && k_link[0].min < k_link[2].min) {
-            nub += 10;
-        }
-        if (k_link[1].mean5 < k_link[1].mean10) {
-            nub += 10;
-            if (k_link[2].mean5 < k_link[2].mean10) {
-                nub += 10;
-            }
-        } else {
-            return 0
-        }
-        nub -= ((k_link[0].mean5 + k_link[0].mean10) / 2 / k_link[0].mean5 - 1) * 1000
+        let volume = k_link[0].volume / k_link[1].volume;
+        nub -= volume > 1 ? volume - 1 : (1 - volume) * 2;
+        nub -= k_link[0].max / k_link[0].js;
     }
     return nub;
   }
