@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 0; // 测试股票几率 ... 0为不测试
+  let testData = 20; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -321,8 +321,9 @@ Array.prototype.min = function () {
         // let Dip = doubleNeedeDip(k__link);
         // score.numner += Dip.val;
         // consoles.log('doubleNeedeDip  ------>',code, score);
-        score.numner += goUp(k__link);
+        // score.numner += goUp(k__link);
         // score.numner += kdjUp(k__link);
+        score.numner += macdUp(k__link);
         // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
         // score.numner += bollCurr(k__link);
         // consoles.log('bollCurr  ------>',code, score);
@@ -529,7 +530,32 @@ Array.prototype.min = function () {
     }
     return nub;
   }
-  
+  // MACD
+  function macdUp (k_link) {
+    let nub = 0;
+    if (k_link[0] && k_link[1] && k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
+        if (k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR) {
+            nub += 20;
+        }
+        if (k_link[1].MACD.EMA_BAR < k_link[0].MACD.EMA_BAR) {
+            nub += 20;
+        }
+        let [js,ks,max,min] = [[],[],[],[]];
+        k_link.forEach((item, i) => {
+          if (i<10) {
+              js.push(item.js);
+              ks.push(item.ks);
+              max.push(item.max);
+              min.push(item.min);
+          }
+        });
+        let minNmb = min.min().min;
+        if (min.min().nub == 0) return 0;
+        nub -= (k_link[0].js / minNmb - 1) * 100;
+    }
+    return nub < 0 ? 0 : nub;
+  }
+  // kdj
   function kdjUp (k_link) {
     let nub = 0;
     if (k_link[0] && k_link[1] && k_link[0].KDJ && k_link[1].KDJ && k_link[0].KDJ.J && k_link[1].KDJ.J) {

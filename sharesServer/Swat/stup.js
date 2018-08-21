@@ -76,8 +76,8 @@ module.exports = function (code, flag, $) {
           let currDay = Number($.Sday[code][0]);
           let item = $.codeData[code];
           !item.currLength && (item.currLength = 0);
-          let maxSum = (item.curr || $.openVal[code].v) * (1.02 + 0.002 * (5 - item.currLength));
-          let minSum = (item.curr || $.openVal[code].v) * (0.98 - 0.002 * item.currLength);
+          let maxSum = (item.curr || $.openVal[code].v) * (1.015 + 0.002 * (5 - item.currLength));
+          let minSum = (item.curr || $.openVal[code].v) * (0.985 - 0.002 * item.currLength);
           let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
           let toEmail = null;
           console.log(code + ':分析价格!', newest, maxSum + '<' + (max.max * 0.995), minSum + '>' + (min.min * 1.005))
@@ -128,8 +128,8 @@ module.exports.endEmail = function ($) { // 尾盘结束监听
     for (let key in $.codeIDarr2) {
         if ($.codeIDarr2[key].codeID) {
             let item = $.codeIDarr2[key];
-            let lengths = $.Sday[code].length - 1;
             let code = $.codeIDarr2[key].codeID;
+            let lengths = $.Sday[code].length - 1;
             if ($.soaringMin[code] == 1) {
                 $.soaringMin[code] = 0;
                 item.curr = $.Sday[code][lengths].toFixed(2);

@@ -21,31 +21,31 @@
             <el-table-column
               prop="codeID"
               label="代码"
-              width="120">
+              width="100">
             </el-table-column>
             <el-table-column
               prop="name"
               label="名称"
-              width="120">
+              width="100">
             </el-table-column>
             <el-table-column
               prop="max"
               label="上次最高"
-              width="120">
+              width="100">
             </el-table-column>
             <el-table-column
               prop="min"
-              width="120"
+              width="100"
               label="上次最低">
             </el-table-column>
             <el-table-column
-              width="120"
+              width="100"
               prop="mean"
               label="上次平均价">
             </el-table-column>
             <el-table-column
               prop="timeRQ"
-              width="120"
+              width="100"
               label="日期">
             </el-table-column>
             <el-table-column
@@ -54,6 +54,7 @@
               <template slot-scope="scope">
                 <el-button type="primary" class="f-info" @click="dayLink(scope.row)">日线</el-button>
                 <el-button type="primary" class="f-info" @click="minuteLink(scope.row)">5分钟线</el-button>
+                <el-button type="primary" class="f-info" @click="MACD(scope.row)">MACD</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -168,6 +169,7 @@ export default {
       data: [],
       index: 0,
       boll: {},
+      macd: {},
       status: 1,
       obj: null,
       flag: false
@@ -307,8 +309,97 @@ export default {
     },
     echartEv () {
       setTimeout(() => {
-        this.echartload()
+        if (this.status === 1 || this.status === 2) {
+          this.echartload()
+        } else if (this.status === 3) {
+          this.echartMACD()
+        }
       })
+    },
+    MACD (obj) {
+      if (!obj) return
+      this.status = 3
+      this.obj = obj
+      this.code = obj.codeID
+      let data = {
+        codeID: obj.codeID
+      }
+      this.$axios
+        .post('/api/HamstrerServlet/stock/find', data)
+        .then(d => {
+          console.log('d', d)
+          this.list = d.data[0]['K-Lin']
+          this.macd = this.list.map(item => item.MACD)
+          this.flag = true
+        })
+    },
+    echartMACD () {
+      let myChart = this.$echarts.init(document.getElementById('echart'))
+      // 绘制图表
+      myChart.title = '5分钟bull值'
+      let option = {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+            type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+          }
+        },
+        legend: {
+          data: ['MACD', 'DIF', 'DEA']
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: [
+          {
+            type: 'category',
+            axisTick: {show: false},
+            data: this.list.map(item => item.timeRQ).reverse()
+          }
+        ],
+        yAxis: [
+          {
+            type: 'value'
+          }
+        ],
+        series: [
+          {
+            name: 'MACD',
+            type: 'bar',
+            label: {
+              normal: {
+                show: false,
+                position: 'inside'
+              }
+            },
+            data: this.macd.map(item => item.EMA_BAR).reverse()
+          },
+          {
+            data: this.macd.map(item => item.EMA_DIF).reverse(),
+            label: {
+              normal: {
+                show: false,
+                position: 'inside'
+              }
+            },
+            type: 'line'
+          },
+          {
+            data: this.macd.map(item => item.EMA_DEA).reverse(),
+            label: {
+              normal: {
+                show: false,
+                position: 'inside'
+              }
+            },
+            type: 'line'
+          }
+        ]
+      }
+      myChart.setOption(option)
     },
     echartload () {
       // 基于准备好的dom，初始化echarts实例
@@ -537,20 +628,4 @@ export default {
     }
   }
 }
-// 平均值
-// function calculateMA (dayCount, data) {
-//   let result = []
-//   for (let i = 0, len = data.values.length; i < len; i++) {
-//     if (i < dayCount) {
-//       result.push('-')
-//       continue
-//     }
-//     let sum = 0
-//     for (let j = 0; j < dayCount; j++) {
-//       sum += data.values[i - j][1]
-//     }
-//     result.push(+(sum / dayCount).toFixed(3))
-//   }
-//   return result
-// }
 </script>
