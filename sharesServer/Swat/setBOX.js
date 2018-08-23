@@ -233,7 +233,7 @@ function maxJudgeAdd(arrData) {
         n = 0,
         maxData = [],
         arr = [];
-    for(i = 0; i < size; i++) {
+    for(i = 0; i < arrData.length; i++) {
         if(arrData[i] > mean) {
             arr.push(arrData[i])
         } else if(arr.length > 1) {
@@ -253,7 +253,7 @@ function maxJudgeMinus(arrData) {
         n = 0,
         minData = [],
         arr = [];
-    for(i = 0; i < size; i++) {
+    for(i = 0; i < arrData.length; i++) {
         if(arrData[i] < mean) {
             arr.push(arrData[i])
         } else if(arr.length > 1) {

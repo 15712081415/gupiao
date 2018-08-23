@@ -185,7 +185,7 @@ $.schedule.scheduleJob('15 56 14 * * 1-5', function () { // 处理正在监听�
 //     });
 // });
 // 执行任务收集信息
-// setBOX($);
+setBOX($);
 // minuteK($)
 $.schedule.scheduleJob('5 0 16 * * 1-5', function () {
     console.log('执行任务setBOX');
