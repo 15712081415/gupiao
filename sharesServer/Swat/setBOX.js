@@ -39,7 +39,9 @@ module.exports = function ($) {
     if (flag) {
         MaxNumber = [];
     }
+    console.log('arr 1');
     let arr = fileArr.map(item => item.codeID);
+    console.log('arr 2');
     getApi(0, arr.length);
 }
   // 收集当天信息
