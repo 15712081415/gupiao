@@ -232,6 +232,7 @@ function maxJudgeAdd(arrData) {
     let i = 0,
         n = 0,
         maxData = [],
+        mean = arrData.sum(),
         arr = [];
     for(i = 0; i < arrData.length; i++) {
         if(arrData[i] > mean) {
@@ -252,6 +253,7 @@ function maxJudgeMinus(arrData) {
     let i = 0,
         n = 0,
         minData = [],
+        mean = arrData.sum(),
         arr = [];
     for(i = 0; i < arrData.length; i++) {
         if(arrData[i] < mean) {
