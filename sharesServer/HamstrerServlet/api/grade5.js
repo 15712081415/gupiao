@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 20; // 测试股票几率 ... 0为不测试
+  let testData = 0; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -324,6 +324,7 @@ Array.prototype.min = function () {
         // score.numner += goUp(k__link);
         // score.numner += kdjUp(k__link);
         score.numner += macdUp(k__link);
+        // score.numner += macdNull(k__link);
         // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
         // score.numner += bollCurr(k__link);
         // consoles.log('bollCurr  ------>',code, score);
@@ -552,6 +553,25 @@ Array.prototype.min = function () {
         let minNmb = min.min().min;
         if (min.min().nub == 0) return 0;
         nub -= (k_link[0].js / minNmb - 1) * 100;
+    }
+    return nub < 0 ? 0 : nub;
+  }
+  // MACD 0
+  function macdNull (k_link) {
+    let nub = 0;
+    if (k_link[0] && k_link[1] && k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
+        if (k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR) {
+            nub += 20;
+        } else {
+            return 0
+        }
+        let meanNub = 0;
+        let i=0;
+        for (;i < k_link.length && i < 5; i++) {
+            meanNub += k_link[i].max / k_link[i].min - 1;
+        }
+        nub += meanNub / (i-1);
+        nub -= k_link[0].MACD.EMA_BAR > 0 ? k_link[0].MACD.EMA_BAR * 100 : k_link[0].MACD.EMA_BAR * (-100);
     }
     return nub < 0 ? 0 : nub;
   }

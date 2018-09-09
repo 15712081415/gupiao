@@ -30,7 +30,8 @@ let $ = {
     deal: {},
     openVal: {},
     status: true,
-    flagCode: {}
+    flagCode: {},
+    loading: loading,
 }
 // 初始化
 $.schedule.scheduleJob('0 55 8 * * 1-5', function () {

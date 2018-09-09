@@ -64,15 +64,15 @@ module.exports = function (code, flag, $) {
               console.log(err);
           });
         }
-        if ($.codeData[code] && $.codeData[code]['K-Lin'][0]['MACD']['EMA_BAR'] < $.codeData[code]['K-Lin'][1]['MACD']['EMA_BAR']) {
-            if (!$.flagCode[code]) {
-                $.flagCode[code] = true;
-                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'% 暂停交易</p>';
-                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
-                emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
-            }
-            return
-        }
+        // if ($.codeData[code] && $.codeData[code]['K-Lin'][0]['MACD']['EMA_BAR'] < $.codeData[code]['K-Lin'][1]['MACD']['EMA_BAR']) {
+        //     if (!$.flagCode[code]) {
+        //         $.flagCode[code] = true;
+        //         let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'% 暂停交易</p>';
+        //         $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
+        //         emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
+        //     }
+        //     return
+        // }
         Number(temp4) > 0 && flag && calculatingData(code, temp1);
     });
     function calculatingData(code, name) {
@@ -87,8 +87,8 @@ module.exports = function (code, flag, $) {
           !item.currLength && (item.currLength = 0);
         //   let maxSum = (item.curr || $.openVal[code].v) * (1.014 + 0.002 * (5 - item.currLength));
         //   let minSum = (item.curr || $.openVal[code].v) * (0.986 - 0.002 * item.currLength);
-          let maxSum = (item.curr || $.openVal[code].v) * 1.014;
-          let minSum = (item.curr || $.openVal[code].v) * 0.986;
+          let maxSum = (item.curr || $.openVal[code].v) * 1.015;
+          let minSum = (item.curr || $.openVal[code].v) * 0.985;
           let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
           let toEmail = null;
           console.log(code + ':分析价格!', newest,max.max, maxSum + '<' + (max.max * 0.996), min.min,minSum + '>' + (min.min * 1.004))
@@ -98,7 +98,7 @@ module.exports = function (code, flag, $) {
                   emailGet(toEmail, $.codeData[code].name + '[' + code + ']:今日飙升中', '当前价：' + $.Sday[code][lengths].toFixed(2) + '当日平均值：' + mean.toFixed(2) + ';当日最高：' + max.max.toFixed(2) + ';上行：' + maxSum.toFixed(2) + ';上压：' + $.maxCurr[code].nub);
                   $.soaringMax[code] = 1;
                   $.minCurr[code].nub = 0;
-              } else if ($.soaringMax[code] == 1 && newest < max.max * 0.996) {
+              } else if ($.soaringMax[code] == 1 && newest < max.max * 0.995) {
                   $.soaringMax[code] = 0;
                   item.curr = $.Sday[code][lengths].toFixed(2);
                   $.Sday[code] = [item.curr];
@@ -112,7 +112,7 @@ module.exports = function (code, flag, $) {
                   emailGet(null, $.codeData[code].name + '[' + code + ']:今日下降中', '当前价：' + $.Sday[code][$.Sday[code].length - 1].toFixed(2) + nubMon);
                   $.soaringMin[code] = 1;
                   $.maxCurr[code].nub = 0
-              } else if ($.soaringMin[code] == 1 && newest > min.min * 1.004) {
+              } else if ($.soaringMin[code] == 1 && newest > min.min * 1.005) {
                   $.soaringMin[code] = 0;
                   item.curr = $.Sday[code][lengths].toFixed(2);
                   $.Sday[code] = [item.curr];

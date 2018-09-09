@@ -115,7 +115,7 @@ module.exports = function ($) {
         if (item['K-Lin']) {
             let objCF = {}
             objCF[o.timeRQ] = true
-            for (let k = 0; k < item['K-Lin'].length && k < 30; k++) {
+            for (let k = 0; k < item['K-Lin'].length && k < 60; k++) {
                 if (item['K-Lin'][k].js) {
                     mean10.push(item['K-Lin'][k].mean);
                     min10.push(item['K-Lin'][k].min);

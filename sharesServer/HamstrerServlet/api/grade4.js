@@ -752,19 +752,19 @@ Array.prototype.min = function () {
     let score = {status:0, numner:0};
     let k__link = testData ? k_link.slice(testCurr, k_link.length) : k_link; // 测试代码去掉 n 数据
     if (k__link.length > 2) {
-        // consoles.log('k_link', k__link[0]);
-        // let Dip = doubleNeedeDip(k__link);
-        // score.numner += Dip;
-        // consoles.log('doubleNeedeDip  ------>',code, score);
-        // if (score.numner) {
-        //     let bollNum = bollCurr(k__link);
-        //     score.numner += bollNum > 15 ? 15 : bollNum;
-        //     consoles.log('bollCurr  ------>',code, score);
-        // }
-        // score.numner += volumeFun(k__link, Dip.val);
-        // consoles.log('volumeFun  ------>',code, score);
-        // score.numner -= equilibrium(k__link, Dip.val ? Dip.sum : null);
-        // consoles.log('equilibrium  ------>',code, score);
+        consoles.log('k_link', k__link[0]);
+        let Dip = doubleNeedeDip(k__link);
+        score.numner += Dip;
+        consoles.log('doubleNeedeDip  ------>',code, score);
+        if (score.numner) {
+            let bollNum = bollCurr(k__link);
+            score.numner += bollNum > 15 ? 15 : bollNum;
+            consoles.log('bollCurr  ------>',code, score);
+        }
+        score.numner += volumeFun(k__link, Dip.val);
+        consoles.log('volumeFun  ------>',code, score);
+        score.numner -= equilibrium(k__link, Dip.val ? Dip.sum : null);
+        consoles.log('equilibrium  ------>',code, score);
         let name = parseInt(score.numner);
         if (name > 0) {
             if (!MaxNumber[name]) MaxNumber[name] = [];
