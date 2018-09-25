@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 20; // 测试股票几率 ... 0为不测试
+  let testData = 0; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -535,24 +535,42 @@ Array.prototype.min = function () {
   function macdUp (k_link) {
     let nub = 0;
     if (k_link[0] && k_link[1] && k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
-        if (k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR) {
-            nub += 20;
+        // if (k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR) {
+        //     nub += 20;
+        // }
+        // let mean1 = k_link[0].mean5 - k_link[0].mean10;
+        // let mean2 = k_link[1].mean5 - k_link[1].mean10;
+        // if (mean1 > mean2) {
+        //     nub += 10;
+        // }
+        // nub -= k_link[0].mean5 > k_link[0].mean10 ?
+        // (k_link[0].mean5 / k_link[0].mean10 - 1) * 100 :
+        // (k_link[0].mean10 / k_link[0].mean5 - 1) * 100 ;
+        // let num = 0;
+        // for (let i=0; i < k_link.length && i < 10; i++) {
+        //     num += (k_link[i].max / k_link[i].min) * 100
+        // }
+        // nub += num / 10;
+        for(let i=0, flag=true;i<k_link.length && flag;i++) {
+            if (k_link[i] && k_link[i+1]) {
+                if (k_link[i].MACD && k_link[i+1].MACD && k_link[i].MACD.EMA_BAR > k_link[i+1].MACD.EMA_BAR) {
+                    nub += 1;
+                    if (k_link[i+2] && k_link[i+2].MACD && k_link[i].MACD.EMA_BAR - k_link[i+1].MACD.EMA_BAR > k_link[i+1].MACD.EMA_BAR - k_link[i+2].MACD.EMA_BAR) {
+                        nub += 1;
+                    }
+                } else {
+                    flag = false;
+                }
+                if (k_link[i].KDJ && k_link[i+1].KDJ && k_link[i].KDJ.J > k_link[i+1].KDJ.J) {
+                    nub += 1;
+                }
+                if (k_link[i].mean5 - k_link[i+1].mean5 < 0) {
+                    flag = false;
+                }
+            }
         }
-        if (k_link[1].MACD.EMA_BAR < k_link[0].MACD.EMA_BAR) {
-            nub += 20;
-        }
-        let [js,ks,max,min] = [[],[],[],[]];
-        k_link.forEach((item, i) => {
-          if (i<10) {
-              js.push(item.js);
-              ks.push(item.ks);
-              max.push(item.max);
-              min.push(item.min);
-          }
-        });
-        let minNmb = min.min().min;
-        if (min.min().nub == 0) return 0;
-        nub -= (k_link[0].js / minNmb - 1) * 100;
+        let mean = k_link[0].mean5 > k_link[0].mean10 ? k_link[0].mean5 / k_link[0].mean10 : k_link[0].mean10 / k_link[0].mean5;
+        nub -= (mean - 1) * 1000
     }
     return nub < 0 ? 0 : nub;
   }

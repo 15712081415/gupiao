@@ -126,6 +126,7 @@
         list: [],
         data: [],
         index: 0,
+        form: {},
         change: true
       }
     },
@@ -240,8 +241,11 @@
         })
       },
       grade () {
-        this.$axios.get('/api/HamstrerServlet/api/grade').then((d) => {
+        this.$axios.get('/api/HamstrerServlet/api/grade2').then((d) => {
           this.$message(d.data)
+        }).catch(function (response) {
+          alert('刷新数据失败!')
+          console.log(response)
         })
       }
     }
