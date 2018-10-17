@@ -97,7 +97,8 @@
 				/*background: #EAEAEA;*/
 				display: flex;
 				align-items:stretch;
-				min-width: 500px;
+				
+				width: 500px;
 			}
 			.main .left{
 				flex-shrink: 1;
@@ -120,6 +121,13 @@
 			#content {
 				color: red;
 			}
+
+			.box {
+				display: inline-block;
+				width: 20px;
+				height: 20px;
+				background-color: blue;
+			}
 		</style>
 	</head>
 	<body>
@@ -130,6 +138,7 @@
 			</div>
 			<div class="right">
 				<h2 id="content"></h2>
+				<input type=text"" id="biao1"></input>
 			</div>
 		</div>
 		<a onclick="test()">测试</a>
@@ -149,19 +158,27 @@
 		function clickFun(dom, str) {
 			dom.className="end";
 			$('#content').html(str);
+			var Url2 = document.getElementById("biao1");
+			Url2.value = str.substring(3, str.length);
+			copyUrl2()
+		}
+		function copyUrl2() {
+			var Url2 = document.getElementById("biao1");
+			Url2.select(); // 选择对象 
+			document.execCommand("Copy"); // 执行浏览器复制命令 
 		}
 		function test() {
 			var dom = $('#myOl');
 				var length = $('#myOl li').length + 1,
 					str = '';
-				str = ['<li><a href="#" data-index="'+ length +'" onclick="clickFun(this, \'代码：300059\')"><b>全仓</b></a></li>',
-					'<li><a href="#" data-index="'+ (length+1) +'" onclick="clickFun(this, \'代码：300059\')"><b>清仓</b></a></li>',
-					'<li><a href="#" data-index="'+ (length+2) +'" onclick="clickFun(this, \'代码：300059\')"><b>清伍</b></a></li>',
-					'<li><a href="#" data-index="'+ (length+3) +'" onclick="clickFun(this, \'代码：300059\')"><b>清肆</b></a></li>',
-					'<li><a href="#" data-index="'+ (length+4) +'" onclick="clickFun(this, \'代码：300059\')"><b>清叁</b></a></li>',
-					'<li><a href="#" data-index="'+ (length+5) +'" onclick="clickFun(this, \'代码：300059\')"><b>清贰</b></a></li>',
-					'<li><a href="#" data-index="'+ (length+6) +'" onclick="clickFun(this, \'代码：300059\')"><b>买伍</b></a></li>',
-					'<li><a href="#" data-index="'+ (length+7) +'" onclick="clickFun(this, \'代码：300059\')"><b>买肆</b></a></li>',
+				str = ['<li><a href="#" data-index="'+ length +'" onclick="clickFun(this, \'代码：300051\')"><b>全仓</b></a></li>',
+					'<li><a href="#" data-index="'+ (length+1) +'" onclick="clickFun(this, \'代码：300052\')"><b>清仓</b></a></li>',
+					'<li><a href="#" data-index="'+ (length+2) +'" onclick="clickFun(this, \'代码：300053\')"><b>清伍</b></a></li>',
+					'<li><a href="#" data-index="'+ (length+3) +'" onclick="clickFun(this, \'代码：300054\')"><b>清肆</b></a></li>',
+					'<li><a href="#" data-index="'+ (length+4) +'" onclick="clickFun(this, \'代码：300055\')"><b>清叁</b></a></li>',
+					'<li><a href="#" data-index="'+ (length+5) +'" onclick="clickFun(this, \'代码：300056\')"><b>清贰</b></a></li>',
+					'<li><a href="#" data-index="'+ (length+6) +'" onclick="clickFun(this, \'代码：300057\')"><b>买伍</b></a></li>',
+					'<li><a href="#" data-index="'+ (length+7) +'" onclick="clickFun(this, \'代码：300058\')"><b>买肆</b></a></li>',
 					'<li><a href="#" data-index="'+ (length+8) +'" onclick="clickFun(this, \'代码：300059\')"><b>买叁</b></a></li>',
 					'<li><a href="#" data-index="'+ (length+9) +'" onclick="clickFun(this, \'代码：300059\')"><b>买贰</b></a></li>'
 				].join('');

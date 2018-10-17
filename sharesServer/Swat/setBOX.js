@@ -18,6 +18,7 @@ module.exports = function ($) {
         content[obj[0]] = obj[1].split('"').join('').split(';').join('').split(',')
       })
       curr++;
+      console.log('api ->', curr)
       curr * 200 >= fileArr.length && cb();
     })
   }
@@ -42,7 +43,7 @@ module.exports = function ($) {
     console.log('arr 1');
     let arr = fileArr.map(item => item.codeID);
     console.log('arr 2');
-    getApi(0, arr.length);
+    getApi(5732, arr.length);
 }
   // 收集当天信息
     function getApi(index, len) {
@@ -112,6 +113,7 @@ module.exports = function ($) {
         mean10 = [(Number(temp5) + Number(temp6)) / 2];
         min10 = [Number(temp6)];
         max10 = [Number(temp5)];
+        console.log("item['K-Lin']", !!item['K-Lin'])
         if (item['K-Lin']) {
             let objCF = {}
             objCF[o.timeRQ] = true
@@ -124,21 +126,27 @@ module.exports = function ($) {
                     objCF[item['K-Lin'][k].timeRQ] = true;
                 }
             }
+            console.log('length ->', k_link.length)
             if (k_link[1] && !k_link[1].MACD) {
                 for (let j = k_link.length - 1; j >= 0; j--) {
                     k_link[j].MACD = MACD(k_link.slice(j, k_link.length));
                 }
             } else {
+                console.log('MACD 0 ->')
                 k_link[0].MACD = MACD(k_link);
             }
+            
             if (k_link[1] && !k_link[1].KDJ) {
                 for (let j = k_link.length - 9; j >= 0; j--) {
                     k_link[j].KDJ = KDJ(k_link.slice(j, k_link.length));
                 }
             } else {
+                console.log('KDJ 0 ->')
                 k_link[0].KDJ = KDJ(k_link);
+                console.log('KDJ 1 ->')
             }
         }
+        console.log("均线")
         // 计算5，10均线
         if (5 < k_link.length) {
             k_link[0].mean5 = k_link.slice(0, 5).sum('js');
@@ -342,7 +350,8 @@ function MACD(k_link) {
 
 
 // KDJ
-function KDJ (k_link, key) {
+function KDJ (list, key) {
+    let k_link = list;
     let [max, min] = [k_link[0].max,k_link[0].min]
     let obj = {
         RSV: 0,
@@ -350,21 +359,28 @@ function KDJ (k_link, key) {
         D: 50,
         J: 50
     };
+    console.log(1)
     if (k_link[8]) {
+        console.log(2)
         for (let i=1;i<9;i++) {
             if (k_link[i].max > max) max = k_link[i].max;
             if (k_link[i].min < min) min = k_link[i].min;
         }
+        console.log(3, k_link.length)
         obj.RSV = (k_link[0].js-min)/(max-min)*100;
-        if (k_link[1].KDJ && k_link[1].KDJ.k) {
-            obj.K = 2 / 3 * k_link[1].KDJ.k+ 1 / 3 * obj.RSV;
+        if (k_link[1].KDJ && k_link[1].KDJ.K) {
+            obj.K = 2 / 3 * k_link[1].KDJ.K+ 1 / 3 * obj.RSV;
         } else {
-            obj.K = 2/3*KDJ(k_link.slice(1, k_link.length), 'K')+1/3*obj.RSV;
+            console.log(4)
+            let k = k_link.splice(0,1);
+            obj.K = 2/3*KDJ(k, 'K')+1/3*obj.RSV;
         }
         if (k_link[1].KDJ && k_link[1].KDJ.D) {
             obj.D = 2 / 3 * k_link[1].KDJ.D+ 1 / 3 * obj.K;
         } else {
-            obj.D = 2/3*KDJ(k_link.slice(1, k_link.length), 'D')+1/3*obj.K;
+            console.log(5)
+            let d = k_link.splice(0,1);
+            obj.D = 2/3*KDJ(d, 'D')+1/3*obj.K;
         }
         obj.J = 3 * obj.K - 2 * obj.D;
     }
