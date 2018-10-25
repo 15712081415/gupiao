@@ -74,6 +74,7 @@ module.exports = function (code, flag, $) {
                 let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'% 暂停交易</p>';
                 $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
                 emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
+                $.codeData[code].currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": 0}});
             }
             return
         }
@@ -106,8 +107,8 @@ module.exports = function (code, flag, $) {
                   $.soaringMax[code] = 0;
                   item.curr = $.Sday[code][lengths].toFixed(2);
                   $.Sday[code] = [item.curr];
-                  emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + sell[item.currLength], '当前价：' + $.Sday[code][0]);
-                  $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[item.currLength]});
+                  emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + sell[item.ztLength], '当前价：' + $.Sday[code][0]);
+                  $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[item.ztLength]});
                   item.currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('-', item)}});
               }
           } else if (newest < minSum || $.soaringMin[code]) {
@@ -130,18 +131,23 @@ module.exports = function (code, flag, $) {
     function currLength(type, item) {
         if (type == '+') {
             let nub = item.currLength + 1
-            if (nub < buy.length - 1) {
+            if (nub <= buy.length - 1) {
                 item.currLength = nub
             } else {
+                item.currLength = 0
                 $.flagCode[code] = true;
             }
             return nub
         } else {
             let nub = item.currLength - 1
-            if (nub > 0) {
+            if (nub >= 0) {
                 item.currLength = nub
             } else {
+                item.currLength = buy.length - 1
                 $.flagCode[code] = true;
+            }
+            if (item.ztLength - 1 > 0) {
+                item.ztLength = item.ztLength - 1
             }
             return nub
         }
@@ -171,7 +177,7 @@ module.exports.endEmail = function ($) { // 尾盘结束监听
                 $.Sday[code] = [item.curr];
                 emailGet(null, $.codeData[code].name + '[' + code + ']:' + buy[item.currLength], '当前价：' + $.Sday[code][0]);
                 $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[item.currLength]});
-                item.currLength < 5 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": item.currLength++}});
+                item.currLength < 5 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('+', item)}});
             }
             if ($.soaringMax[code] == 1) {
                 $.soaringMax[code] = 0;
@@ -179,8 +185,27 @@ module.exports.endEmail = function ($) { // 尾盘结束监听
                 $.Sday[code] = [item.curr];
                 emailGet(null, $.codeData[code].name + '[' + code + ']:' + sell[item.currLength], '当前价：' + $.Sday[code][0]);
                 $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[item.currLength]});
-                item.currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": item.currLength--}});
+                item.currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('-', item)}});
             }
+        }
+    }
+    function currLength(type, item) {
+        if (type == '+') {
+            let nub = item.currLength + 1
+            if (nub <= buy.length - 1) {
+                item.currLength = nub
+            } else {
+                item.currLength = 0
+            }
+            return nub
+        } else {
+            let nub = item.currLength - 1
+            if (nub >= 0) {
+                item.currLength = nub
+            } else {
+                item.currLength = buy.length - 1
+            }
+            return nub
         }
     }
 }

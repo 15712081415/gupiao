@@ -7,7 +7,7 @@ module.exports = function ($) {
   let curr = 0;
   $.status = {};
   function api(codeID) {
-    $.https.get('http://hq.sinajs.cn/list=' + codeID, {
+    return $.https.get('http://hq.sinajs.cn/list=' + codeID, {
 //        responseType:'arraybuffer'
     }).then(function (res) {
     //   let str = iconv.decode(res.data, 'gbk');
@@ -22,11 +22,11 @@ module.exports = function ($) {
       curr * 200 >= fileArr.length && cb();
     })
   }
-  function stockFind() {
+  async function stockFind() {
     let arr = fileArr.map(item => item.codeID);
     for(let i = 0;i<arr.length; i+=200) {
         let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
-        api(codeArr);
+        await api(codeArr);
         console.log('init', i, arr.length);
     }
   }
@@ -43,7 +43,7 @@ module.exports = function ($) {
     console.log('arr 1');
     let arr = fileArr.map(item => item.codeID);
     console.log('arr 2');
-    getApi(5732, arr.length);
+    getApi(0, arr.length);
 }
   // 收集当天信息
     function getApi(index, len) {
@@ -117,7 +117,7 @@ module.exports = function ($) {
         if (item['K-Lin']) {
             let objCF = {}
             objCF[o.timeRQ] = true
-            for (let k = 0; k < item['K-Lin'].length && k < 60; k++) {
+            for (let k = 0; k < item['K-Lin'].length && k < 30; k++) {
                 if (item['K-Lin'][k].js) {
                     mean10.push(item['K-Lin'][k].mean);
                     min10.push(item['K-Lin'][k].min);

@@ -73,6 +73,7 @@ function loading() {
                 $.minValue[item.codeID] = (Number(item.mean) - item.min) * 0.05;
                 $.maxCurr[item.codeID] = { nub: 0, arr: [] };
                 $.minCurr[item.codeID] = { nub: 0, arr: [] };
+                item.ztLength = item.currLength;
                 $.codeData[item.codeID] = item;
                 $.deal[item.codeID] = { up: 0, dow: 0, status: true, info: null}
                 if (item.codeID.indexOf('hk') !== -1) {
