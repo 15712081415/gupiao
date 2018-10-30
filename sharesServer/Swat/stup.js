@@ -1,6 +1,6 @@
 let email = require('../getemail');
 let buy = ['买肆','买叁','买贰','全仓','清仓']; // '买伍',
-let sell = ['全仓','清仓','清贰','清叁','清肆']; // ,'清伍'
+let sell = ['买贰','清仓','清贰','清叁','清肆']; // ,'清伍'
 module.exports = function (code, flag, $) {
   console.log('stup', code, flag);
   $.https.get('http://hq.sinajs.cn/list=' + (code.indexOf('hk') === -1 ? code : 'rt_' + code)).then(res => {
@@ -108,7 +108,6 @@ module.exports = function (code, flag, $) {
                   item.curr = $.Sday[code][lengths].toFixed(2);
                   $.Sday[code] = [item.curr];
                   emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + sell[item.ztLength], '当前价：' + $.Sday[code][0]);
-                  $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[item.ztLength]});
                   item.currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('-', item)}});
               }
           } else if (newest < minSum || $.soaringMin[code]) {
@@ -122,14 +121,14 @@ module.exports = function (code, flag, $) {
                   item.curr = $.Sday[code][lengths].toFixed(2);
                   $.Sday[code] = [item.curr];
                   emailGet(null, $.codeData[code].name + '[' + code + ']:' + buy[item.currLength], '当前价：' + $.Sday[code][0]);
-                  $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[item.currLength]});
                   item.currLength < 5 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('+', item)}});
               }
           }
       }
     }
-    function currLength(type, item) {
+    function currLength(type, item, code) {
         if (type == '+') {
+            $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[item.currLength]});
             let nub = item.currLength + 1
             if (nub <= buy.length - 1) {
                 item.currLength = nub
@@ -137,19 +136,26 @@ module.exports = function (code, flag, $) {
                 item.currLength = 0
                 $.flagCode[code] = true;
             }
-            return nub
+            return item.currLength
         } else {
-            let nub = item.currLength - 1
-            if (nub >= 0) {
-                item.currLength = nub
+            if (item.ztLength - 1 > 0) {
+                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[item.ztLength]});                
+                item.ztLength = item.ztLength - 1
+                let nub = item.currLength - 1
+                if (nub >= 0) {
+                    item.currLength = nub
+                } else {
+                    item.currLength = buy.length - 1
+                    $.flagCode[code] = true;
+                }
             } else {
-                item.currLength = buy.length - 1
+                if (item.currLength < 2) {
+                    $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[2 - item.currLength]});                
+                    item.currLength = 2
+                }
                 $.flagCode[code] = true;
             }
-            if (item.ztLength - 1 > 0) {
-                item.ztLength = item.ztLength - 1
-            }
-            return nub
+            return item.currLength
         }
     }
 }
