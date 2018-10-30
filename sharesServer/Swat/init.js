@@ -1,5 +1,6 @@
 /**
  * Created by Administrator on 2017/5/14.
+ * 15712081415 qwe 15986849165
  */
 module.exports = {
   init: function () {
