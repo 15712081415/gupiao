@@ -108,7 +108,7 @@ module.exports = function (code, flag, $) {
                   item.curr = $.Sday[code][lengths].toFixed(2);
                   $.Sday[code] = [item.curr];
                   emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + sell[item.ztLength], '当前价：' + $.Sday[code][0]);
-                  item.currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('-', item)}});
+                  item.currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('-', item, code)}});
               }
           } else if (newest < minSum || $.soaringMin[code]) {
               if ($.soaringMin[code] == 0) {
@@ -121,7 +121,7 @@ module.exports = function (code, flag, $) {
                   item.curr = $.Sday[code][lengths].toFixed(2);
                   $.Sday[code] = [item.curr];
                   emailGet(null, $.codeData[code].name + '[' + code + ']:' + buy[item.currLength], '当前价：' + $.Sday[code][0]);
-                  item.currLength < 5 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('+', item)}});
+                  item.currLength < 5 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('+', item, code)}});
               }
           }
       }

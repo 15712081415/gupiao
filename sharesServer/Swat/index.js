@@ -95,7 +95,7 @@ function loading() {
 // 开始记录今天的数据
 let ruleCurr = new $.schedule.RecurrenceRule();
 ruleCurr.dayOfWeek = [1, 2, 3, 4, 5]; // 周
-ruleCurr.hour = [9, 10, 11, 12, 13, 14, 15]; // 时
+// ruleCurr.hour = [9, 10, 11, 12, 13, 14, 15]; // 时
 ruleCurr.second = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]; // 秒
 $.schedule.scheduleJob(ruleCurr, function () {
     $.codeIDarr1.length > 0 || $.codeIDarr2.length > 0 || $.codeIDarr3.length > 0 ? gainCode() : loading();
@@ -114,13 +114,13 @@ function gainCode() {
                 longLine(item.codeID, !!item.max, $);
             }
         }
-        if (time.getHours() < 15) {
+        // if (time.getHours() < 15) {
             for (let i = 0; i < $.codeIDarr2.length; i++) {
                 let item = $.codeIDarr2[i];
                 console.log("stup解析股票代码：", item.codeID)
                 stup(item.codeID, !!item.max, $);
             }
-        }
+        // }
         for (let i = 0; i < $.codeIDarr3.length; i++) {
             let item = $.codeIDarr3[i];
             console.log("解析股票代码香港：", item.codeID)
