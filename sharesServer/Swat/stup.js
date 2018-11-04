@@ -97,7 +97,7 @@ module.exports = function (code, flag, $) {
           let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
           let toEmail = null;
           console.log(code + ':分析价格!', newest,max.max, maxSum + '<' + (max.max * 0.996), min.min,minSum + '>' + (min.min * 1.004))
-        //   console.log('maxSum:', item.curr, $.openVal[code].v, 1.014 + 0.002 * (5 - item.currLength))
+          console.log('maxSum:', maxSum, 'minSum:', minSum);
           if (newest > maxSum || $.soaringMax[code]) {
               if ($.soaringMax[code] == 0) {
                   emailGet(toEmail, $.codeData[code].name + '[' + code + ']:今日飙升中', '当前价：' + $.Sday[code][lengths].toFixed(2) + '当日平均值：' + mean.toFixed(2) + ';当日最高：' + max.max.toFixed(2) + ';上行：' + maxSum.toFixed(2) + ';上压：' + $.maxCurr[code].nub);
