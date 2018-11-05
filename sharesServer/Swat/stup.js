@@ -150,7 +150,7 @@ module.exports = function (code, flag, $) {
                 }
             } else {
                 if (item.currLength < 2) {
-                    $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[2 - item.currLength]});                
+                    $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[2 - item.currLength]});                
                     item.currLength = 2
                 }
                 $.flagCode[code] = true;
