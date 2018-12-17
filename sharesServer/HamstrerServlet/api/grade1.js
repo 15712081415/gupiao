@@ -557,7 +557,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 20; // 测试股票几率 ... 0为不测试
+  let testData = 0; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
