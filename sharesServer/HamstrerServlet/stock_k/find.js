@@ -1,4 +1,3 @@
-console.log(1)
 MyList[stockName] = MyList[stockName] || mongoose.model(stockName, new Schema({
     'codeID': String,
     'K-Lin': Object,
