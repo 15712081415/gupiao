@@ -5,6 +5,7 @@ let stup = require('./stup');
 let HKstup = require('./HKstup');
 let setBOX = require('./setBOX');
 let minuteK = require('./minuteK');
+let serverData = require('./serverData');
 init.init();
 // ------------------------------------
 let $ = {
@@ -55,12 +56,14 @@ $.schedule.scheduleJob('0 55 8 * * 1-5', function () {
     $.status = true; // 是否开始统计
     $.flagCode = {}; // 清仓标识
 });
+loading()
 function loading() {
     if ($.timeRQ == setTime()) return
     console.log('loading');
     $.Sday = {};
     $.timeRQ = setTime(); // 当天日期
     $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/find').then(function (d) {
+        serverData(d.data)
         console.log('stock/find');
         let arr1 = [], arr2 = [], arr3 = [];
         for (let i = 0; i < d.data.length; i++) {
