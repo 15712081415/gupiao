@@ -56,7 +56,6 @@ $.schedule.scheduleJob('0 55 8 * * 1-5', function () {
     $.status = true; // 是否开始统计
     $.flagCode = {}; // 清仓标识
 });
-loading()
 function loading() {
     if ($.timeRQ == setTime()) return
     console.log('loading');
