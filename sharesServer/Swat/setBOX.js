@@ -46,7 +46,7 @@ module.exports = function ($) {
     getApi(0, arr.length);
 }
   // 收集当天信息
-    function getApi(index, len) {
+    async function getApi(index, len) {
         if (index >= len) return;
         console.log('lookData', index, len);      
         let item = fileArr[index];    
@@ -177,22 +177,35 @@ module.exports = function ($) {
         };
         console.log('edit ->', index);
         if (obj.max) {
-            editData(item.codeID, obj, index, len);
+            await addData(item.codeID, obj, index, len);
+            await editData(item.codeID, obj, index, len);
+            getApi(index+1, len);
         } else {
             getApi(index+1, len);
         }
     }
   function editData (codeID, obj, index, len) {
-      return $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit', {
+    return $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit', {
           where: { codeID: codeID },
           setter: obj
       }).then(function (res) {
           console.log('成功 ' + codeID + '-->', index);
-          getApi(index+1, len);
       }).catch(function (err) {
           console.log('失败 ', codeID + '-->', index);
-          getApi(index+1, len);
       })
+  }
+
+  function addData (codeID, obj, index, len) {
+      let data = {
+        'codeID': codeID,
+        'K-Lin': obj['K-Lin'][0],
+        'timeRQ': obj.timeRQ
+      };
+    return $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock_k/add', data).then(function (res) {
+        console.log('成功 ' + codeID + '-->', index);
+    }).catch(function (err) {
+        console.log('失败 ', codeID + '-->', index);
+    })
   }
 }
 // 计算布林值

@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 25; // 测试股票几率 ... 0为不测试
+  let testData = 0; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -319,11 +319,11 @@ Array.prototype.min = function () {
         consoles.log('k__link', k__link[0]);
         // let Dip = doubleNeedeDip(k__link);
         // score.numner += Dip.val;
-        // consoles.log('doubleNeedeDip  ------>',code, score);
+        consoles.log('doubleNeedeDip  ------>',code, score);
         score.numner += goUp(k__link);
         // score.numner += kdjUp(k__link);
         // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
-        // score.numner += bollCurr(k__link);
+        // score.numner -= bollCurr(k__link);
         // consoles.log('bollCurr  ------>',code, score);
         // score.numner += volumeFun(k__link);
         // consoles.log('volumeFun  ------>',code, score);
@@ -462,7 +462,7 @@ Array.prototype.min = function () {
       }
       let [js,ks,max,min] = [[],[],[],[]];
       k_link.forEach((item, i) => {
-        if (i<10) {
+        if (i<15) {
             js.push(item.js);
             ks.push(item.ks);
             max.push(item.max);
@@ -509,7 +509,7 @@ Array.prototype.min = function () {
     });
     if (k_link && k_link[0]&& k_link[1]) {
         if (k_link[0].mean5 > k_link[0].mean10) return 0;
-        if (k_link[0].js / k_link[1].js > 1.03) return 0;
+        if (k_link[0].js / k_link[1].js > 1.08) return 0;
         if (k_link[0].js > k_link[0].mean20) {
             nub += 5;
         }
@@ -546,6 +546,11 @@ Array.prototype.min = function () {
             }
         } else {
             return 0
+        }
+        if (k_link[0] && k_link[1] && k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
+            if (k_link[0].MACD.EMA_BAR < k_link[1].MACD.EMA_BAR) {
+                return 0
+            }
         }
         nub -= ((k_link[0].mean5 + k_link[0].mean10) / 2 / k_link[0].mean5 - 1) * 1000
     }

@@ -65,7 +65,7 @@ module.exports = function (code, flag, $) {
         let currEnt = parseInt((temp4 - temp3) / temp3 * 10000) / 100;
         console.log(code + '检测行情', currEnt + '%', stop);
         if (!$.openVal[code]) $.openVal[code] = {v:temp3, s: currEnt};        
-        if (currEnt < (stop < 2 ? -2 : stop) - 2) {
+        if (currEnt < (stop < 2 ? -5 : stop) - 2) {
             if (!$.flagCode[code]) {
                 $.flagCode[code] = true;
                 let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'%</p>';
@@ -86,9 +86,9 @@ module.exports = function (code, flag, $) {
           let currDay = $.Sday[code][0];
           let item = $.codeData[code];
         //   let minMenny = $.maxCurr[code].arr.length >= 2 ? 1.05 : 1.02;
-          let minMenny = 1.015;
+          let minMenny = 1.02;
           let maxSum = $.openVal[code].v * minMenny;
-          let minSum = $.openVal[code].v * -1.02;
+          let minSum = $.openVal[code].v * -1.01;
           let isMax = $.openVal[code].v * 0.004 < 0.03? 0.03 : $.openVal[code].v * 0.004;
           let isMin = $.openVal[code].v * 0.004 < 0.03? 0.03 : $.openVal[code].v * 0.004;
         //   console.log(newest,maxSum,isMax,minSum, isMin, 'max：', newest > maxSum, $.Sday[code].max().nub == $.Sday[code].length - 1, 'min:', newest < isMin, $.Sday[code].min().nub == $.Sday[code].length - 1);

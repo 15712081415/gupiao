@@ -1,6 +1,16 @@
 let email = require('../getemail');
 let buy = ['买肆','买叁','买贰','全仓','清仓']; // '买伍',
 let sell = ['买贰','清仓','清贰','清叁','清肆']; // ,'清伍'
+let currLengthKey = {
+    '买肆': 1,
+    '买叁': 2,
+    '买贰': 3,
+    '全仓': 4,
+    '清仓': 0,
+    '清贰': 1,
+    '清叁': 2,
+    '清肆': 3
+}
 module.exports = function (code, flag, $) {
   console.log('stup', code, flag);
   $.https.get('http://hq.sinajs.cn/list=' + (code.indexOf('hk') === -1 ? code : 'rt_' + code)).then(res => {
@@ -64,20 +74,20 @@ module.exports = function (code, flag, $) {
               console.log(err);
           });
         }
-        if ($.codeData[code] && 
-            $.codeData[code]['K-Lin'] &&
-            $.codeData[code]['K-Lin'][0] &&
-            $.codeData[code]['K-Lin'][1] &&
-            $.codeData[code]['K-Lin'][0]['MACD']['EMA_BAR'] < $.codeData[code]['K-Lin'][1]['MACD']['EMA_BAR']) {
-            if (!$.flagCode[code]) {
-                $.flagCode[code] = true;
-                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'% 暂停交易</p>';
-                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
-                emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
-                $.codeData[code].currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": 0}});
-            }
-            return
-        }
+        // if ($.codeData[code] && 
+        //     $.codeData[code]['K-Lin'] &&
+        //     $.codeData[code]['K-Lin'][0] &&
+        //     $.codeData[code]['K-Lin'][1] &&
+        //     $.codeData[code]['K-Lin'][0]['MACD']['EMA_BAR'] < $.codeData[code]['K-Lin'][1]['MACD']['EMA_BAR']) {
+        //     if (!$.flagCode[code]) {
+        //         $.flagCode[code] = true;
+        //         let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'% 暂停交易</p>';
+        //         $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
+        //         emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
+        //         $.codeData[code].currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": 0}});
+        //     }
+        //     return
+        // }
         Number(temp4) > 0 && !$.flagCode[code] && calculatingData(code, temp1);
     });
     function calculatingData(code, name) {
@@ -92,8 +102,8 @@ module.exports = function (code, flag, $) {
           !item.currLength && (item.currLength = 0);
         //   let maxSum = (item.curr || $.openVal[code].v) * (1.014 + 0.002 * (5 - item.currLength));
         //   let minSum = (item.curr || $.openVal[code].v) * (0.986 - 0.002 * item.currLength);
-          let maxSum = (item.curr || $.openVal[code].v) * 1.03;
-          let minSum = (item.curr || $.openVal[code].v) * 0.97;
+          let maxSum = (item.curr || $.openVal[code].v) * 1.02;
+          let minSum = (item.curr || $.openVal[code].v) * 0.98;
           let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
           let toEmail = null;
           console.log(code + ':分析价格!', newest,max.max, maxSum + '<' + (max.max * 0.996), min.min,minSum + '>' + (min.min * 1.004))
@@ -130,7 +140,7 @@ module.exports = function (code, flag, $) {
         if (type == '+') {
             $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[item.currLength]});
             let nub = item.currLength + 1
-            if (nub <= buy.length - 1) {
+            if (nub < buy.length) {
                 item.currLength = nub
             } else {
                 item.currLength = 0
@@ -150,7 +160,7 @@ module.exports = function (code, flag, $) {
                 }
             } else {
                 if (item.currLength < 2) {
-                    $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[2 - item.currLength]});                
+                    $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[2 - item.currLength]});                
                     item.currLength = 2
                 }
                 $.flagCode[code] = true;
@@ -173,9 +183,9 @@ function emailGet(to, tit, text) {
 
 module.exports.endEmail = function ($) { // 尾盘结束监听
     for (let key in $.codeIDarr2) {
-        if ($.codeIDarr2[key].codeID) {
+        let code = $.codeIDarr2[key].codeID;
+        if (code && $.Sday[code]) {
             let item = $.codeIDarr2[key];
-            let code = $.codeIDarr2[key].codeID;
             let lengths = $.Sday[code].length - 1;
             if ($.soaringMin[code] == 1) {
                 $.soaringMin[code] = 0;
@@ -195,14 +205,9 @@ module.exports.endEmail = function ($) { // 尾盘结束监听
             }
         }
     }
-    function currLength(type, item) {
+    function currLength(type, item, name) {
         if (type == '+') {
-            let nub = item.currLength + 1
-            if (nub <= buy.length - 1) {
-                item.currLength = nub
-            } else {
-                item.currLength = 0
-            }
+            let nub = buy.indexOf(name) + 1
             return nub
         } else {
             let nub = item.currLength - 1
