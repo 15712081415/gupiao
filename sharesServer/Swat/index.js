@@ -5,6 +5,7 @@ let stup = require('./stup');
 let HKstup = require('./HKstup');
 let setBOX = require('./setBOX');
 let minuteK = require('./minuteK');
+let serverData = require('./serverData');
 init.init();
 // ------------------------------------
 let $ = {
@@ -61,6 +62,7 @@ function loading() {
     $.Sday = {};
     $.timeRQ = setTime(); // 当天日期
     $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/find').then(function (d) {
+        serverData(d.data)
         console.log('stock/find');
         let arr1 = [], arr2 = [], arr3 = [];
         for (let i = 0; i < d.data.length; i++) {
