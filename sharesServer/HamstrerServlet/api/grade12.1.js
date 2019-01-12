@@ -125,9 +125,7 @@ Array.prototype.min = function () {
     init();
   })
   function api(codeID) {
-    return axios.get('http://hq.sinajs.cn/list=' + codeID, {
-       responseType:'arraybuffer'
-    }).then(function (res) {
+    return axios.get('http://127.0.0.1:9999/HamstrerServlet/stock_k/find?' + codeID).then(function (res) {
       let str = iconv.decode(res.data, 'gbk');
       strArr = str.split('var hq_str_');
       strArr.splice(0,1);
@@ -135,16 +133,17 @@ Array.prototype.min = function () {
         let obj = item.split('=');
         content[obj[0]] = obj[1].split('"').join('').split(';').join('').split(',')
       })
+      content[codeID] = res.data.map(item => item.k_link).reverse()
       curr++;
-      curr * 200 >= fileArr.length && cb();
+      curr >= fileArr.length && cb();
     })
   }
 
     function init () {
         let arr = fileArr.map(item => item.codeID);
-        for(let i = 0;i<arr.length; i+=200) {
-            let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
-            api(codeArr);
+        for(let i = 0;i<arr.length; i++) {
+            // let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
+            api(arr[i]);
             console.log('init', i, arr.length);
         }
     }
@@ -204,108 +203,7 @@ Array.prototype.min = function () {
   function getHtml(index, len){
     console.log('indexKS', index, len);
     let item = fileArr[index];    
-    let data = content[item.codeID];
-    if (!(fileArr[index] && fileArr[index]['K-Lin'] && data)) {
-        return consoles.log('not K-Lin');
-    }
-    let [
-        temp1, // 股票名称
-        temp2, // 今日开盘价
-        temp3, // 昨日收盘价
-        temp4, // 现价（股票当前价，收盘以后这个价格就是当日收盘价）
-        temp5, // 最高价
-        temp6, // 最低价
-        temp7, // 日期
-        temp8, // 时间
-        volume
-    ] = item.codeID.indexOf('hk') === -1 ? [
-        data[0],
-        data[1],
-        data[2],
-        data[3],
-        data[4],
-        data[5],
-        data[30],
-        data[31],
-        data[8]
-    ] : [
-        data[1],
-        data[2],
-        data[3],
-        data[6],
-        data[4],
-        data[5],
-        data[17],
-        data[18],
-        data[8]
-    ]
-    if (!Number(temp5)) return;
-    if (temp1.indexOf('退市') > -1 || temp1.indexOf('ST') > -1) {
-        consoles.log('劣质股！');
-        return;
-    }
-    if (Number(temp4) == 0 || (Number(temp4) - Number(temp3)) / Number(temp3) > 0.08) {
-        consoles.log('max 5%');
-        return;
-    }
-    let timeRQ = temp7;
-    let k_link = [];
-    let o = {
-        'max': Number(temp5),
-        'min': Number(temp6),
-        'mean': (Number(temp5) + Number(temp6)) / 2,
-        'boll': null,
-        'ks': Number(temp2),
-        'js': Number(temp4),
-        'volume': Number(volume),
-        'mean5': null,
-        'mean10': null,
-        'mean20': null,
-        'mean30': null,
-        'deal': null,
-        'timeRQ': temp7,
-        'status': Number(temp4) - Number(temp2)
-    }
-    console.log('boll');
-    o.boll = boll(item['K-Lin'], o);
-    if (!item['K-Lin'][0] || item['K-Lin'][0].timeRQ != o.timeRQ) {
-        k_link = [o];
-    }
-    if (item['K-Lin']) {
-        for (let k = 0; k < item['K-Lin'].length && k < 20; k++) {
-            if (item['K-Lin'][k].js) {
-                k_link.push(item['K-Lin'][k]);
-            }
-        }
-        if (!k_link[1].MACD) {
-            for (let j = k_link.length - 1; j >= 0; j--) {
-                k_link[j].MACD = MACD(k_link.slice(j, k_link.length));
-            }
-        } else {
-            k_link[0].MACD = MACD(k_link);
-        }
-        if (k_link[1] && !k_link[1].KDJ) {
-            for (let j = k_link.length - 9; j >= 0; j--) {
-                k_link[j].KDJ = KDJ(k_link.slice(j, k_link.length));
-            }
-        } else {
-            k_link[0].KDJ = KDJ(k_link);
-        }
-    }
-    // 计算5，10均线
-    console.log('均线');
-    if (5 < k_link.length) {
-        k_link[0].mean5 = k_link.slice(0, 5).sum('js');
-    }
-    if (10 < k_link.length) {
-        k_link[0].mean10 = k_link.slice(0, 10).sum('js');
-    }
-    if (20 < k_link.length) {
-        k_link[0].mean20 = k_link.slice(0, 20).sum('js');
-    }
-    if (30 < k_link.length) {
-        k_link[0].mean30 = k_link.slice(0, 30).sum('js');
-    }
+    let k_link = 
     consoles.log('开始scoreNumber计算分数');
     scoreNumber(k_link, item.codeID);
     console.log('getHtml + 1');
