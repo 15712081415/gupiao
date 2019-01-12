@@ -4,6 +4,8 @@ import Hello from '@/components/Hello'
 import add from '@/components/add'
 import kLink from '@/components/k_link'
 import kLink1 from '@/components/k_link.1'
+import echartTable from '@/components/echartTable'
+
 Vue.use(Router)
 export default new Router({
   routes: [
@@ -31,6 +33,11 @@ export default new Router({
       path: '/k_link.1',
       name: 'k_link.1',
       component: kLink1
+    },
+    {
+      path: '/echartTable',
+      name: 'echartTable',
+      component: echartTable
     }
   ]
 })

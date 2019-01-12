@@ -194,7 +194,7 @@ Array.prototype.min = function () {
                 cb(true);
             }
         } else {
-            if (!MaxNumber.length) return;
+            if (!MaxNumber.length) return res.send('[]');
             // emailGet(null, '评分', str);
             let Arr = MaxNumber.val;
             res.send(JSON.stringify(Arr.slice(0, Number(type))));
@@ -322,14 +322,14 @@ Array.prototype.min = function () {
         // score.numner += Dip.val;
         // consoles.log('doubleNeedeDip  ------>',code, score);
         // score.numner += goUp(k__link);
-        // score.numner += kdjUp(k__link);
+        score.numner += kdjUp(k__link);
         // score.numner += macdUp(k__link);
         // score.numner += macdNull(k__link);
         // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
-        score.numner += bollCurr(k__link);
+        // score.numner += bollCurr(k__link);
         // consoles.log('scoreNumber bollCurr -->', score.numner);
         // consoles.log('bollCurr  ------>',code, score);
-        score.numner += volumeFun(k__link);
+        // score.numner += volumeFun(k__link);
         // consoles.log('volumeFun  ------>',code, score);
         // score.numner += NeedeDip(k__link);
         // score.numner -= equilibrium(k__link, null);
@@ -564,62 +564,24 @@ Array.prototype.min = function () {
     }
     return nub < 0 ? 0 : nub;
   }
-  // kdj
+  // kdj JKD
   function kdjUp (k_link) {
     let nub = 0;
     if (k_link[0] && k_link[1] && k_link[0].KDJ && k_link[1].KDJ && k_link[0].KDJ.J && k_link[1].KDJ.J) {
-        if (k_link[0].js / k_link[1].js > 1.04) return 0;
-        if (k_link[0].KDJ.J > k_link[1].KDJ.J) {
-            nub += 20;
-        }
-        // if (k_link[0].KDJ.D < k_link[0].KDJ.K) {
-        //     nub += 10;
-        // }
-        // if (k_link[1].KDJ.J < 10 || (k_link[2] && k_link[2].KDJ && k_link[2].KDJ.J < 10) || (k_link[3] && k_link[3].KDJ && k_link[3].KDJ.J < 10)) {
-        //     nub += 10;
-        // }
-        // if (k_link[0].KDJ.J > 10 && k_link[0].KDJ.J < 30) {
-        //     nub += 10;
-        // }
-        // if (k_link[0].mean5 > k_link[0].mean10 && k_link[0].mean10 > k_link[0].mean20 ) {
-        //     nub += 10;
-        // }
-        // if (k_link[0].mean30 && k_link[0].mean20 > k_link[0].mean30) {
-        //     nub += 5;
-        // }
-        // let a = 0;
-        // let K = k_link[0].KDJ.K;
-        // let D = k_link[0].KDJ.D;
-        // let J = k_link[0].KDJ.J;
-        // let mean = (K + D + J) / 3;
-        // a += K > mean ? K - mean : mean - K;
-        // a += D > mean ? D - mean : mean - D;
-        // a += J > mean ? J - mean : mean - J;
-        // nub -= a;
-        let kdjArr = [];
-        let [js,ks,max,min] = [[],[],[],[]];
-        k_link.forEach((item, i) => {
-            if (item.KDJ && item.KDJ.J) {
-                kdjArr.push(item.KDJ.J);
-                js.push(item.js);
-                ks.push(item.ks);
-                max.push(item.max);
-                min.push(item.min);
-            }
-        });
-        if (kdjArr.min().nub == 1) {
-            nub += k_link[0].KDJ.J - k_link[1].KDJ.J;
-            if (min.min().nub == 0) {
-                if (k_link[0].status > 0) {
-                    nub += parseInt((k_link[0].ks - k_link[0].min) / k_link[0].min * 10000 || 0) / 100;
-                 } else {
-                    nub += parseInt((k_link[0].js - k_link[0].min) / k_link[0].min * 10000 || 0) / 100;
-                 }
-            }
-            if (k_link[0].volume > k_link[1].volume) {
-                nub += 10;
-            }
-        }
+        if (
+            k_link[0].KDJ.K > 50 ||
+            k_link[0].KDJ.J < k_link[1].KDJ.J ||
+            k_link[0].status < 0
+        ) return 0;
+        
+        nub += 100;
+        let sum = k_link[0].KDJ.J + k_link[0].KDJ.D + k_link[0].KDJ.K
+        let J = sum - k_link[0].KDJ.J
+        let D = sum - k_link[0].KDJ.D
+        let K = sum - k_link[0].KDJ.K
+        nub -= J < 0 ? J * -1 : J
+        nub -= D < 0 ? D * -1 : D
+        nub -= K < 0 ? K * -1 : K
     }
     return nub < 0 ? 0 : nub;
   }

@@ -159,6 +159,7 @@ export default {
       msg: 'Welcome to Your Vue.js App',
       codeID: '',
       code: '',
+      form: {},
       list: [],
       data: [],
       index: 0,
@@ -401,8 +402,6 @@ export default {
               this.boll.SJ.push(item.timeSJ)
               this.boll.JS.push(item.js)
               this.boll.MB.push(item.boll.MB)
-              // this.boll.UP.push(item.boll.MB + (item.boll.MD * norm))
-              // this.boll.DN.push(item.boll.MB - (item.boll.MD * norm))
               this.boll.UP.push(item.boll.UP)
               this.boll.DN.push(item.boll.DN)
               sj[item.timeRQ + item.timeSJ] = true

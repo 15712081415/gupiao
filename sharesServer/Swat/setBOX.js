@@ -33,6 +33,7 @@ module.exports = function ($) {
 
 //   $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', {"codeID":"sh600240"}).then(function (d) {
   $.https.get('http://127.0.0.1:9999/HamstrerServlet/stock/find').then(function (d) {
+      // fileArr = require('../data/data.json'); // 更新错误数据
     fileArr = d.data;
     stockFind();
   });
