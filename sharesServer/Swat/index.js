@@ -133,60 +133,60 @@ function gainCode() {
 
 //尾盘清理
 $.schedule.scheduleJob('1 55 14 * * 1-5', function () { // 5 55 14 * * 1-5
-    // $.codeIDarr1.length && longLine.endEmail($);
+    $.codeIDarr1.length && longLine.endEmail($);
     $.codeIDarr2.length && stup.endEmail($);
-    // !$.codeIDarr1.length && !$.codeIDarr2.length && loading()
+    !$.codeIDarr1.length && !$.codeIDarr2.length && loading()
 });
 
 // 发送最新股票评分
-// $.schedule.scheduleJob('10 55 14 * * 1-5', function () { // 5 56 14 * * 1-5
-//     if (!$.codeIDarr1.length) return;
-//     console.log('发送最新股票评分');
-//     $.status = false; // 停止统计,避免占用资源
-//     let list = 2; // 买几只股
-//     $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade2?type=' + list).then(function (res){
-//         if (res) {
-//             let arr = res.data;
-//             let key = 0
-//             for (let name in $.flagCode) {
-//                 if ($.flagCode[name] !== true)  key++;
-//             }
-//             arr.length = list - key;
-//             if (arr[2]) {
-//                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[2].code},"setter":{"status":1}}).then(res=>{
-//                     console.log(arr[2].code+'修改状态成功')
-//                 })
-//                 let numCode = arr[2].code.substring(2, 8);
-//                 $.io.sockets.emit('news',{content: '代码：' + numCode, title: '买叁'});
-//                 let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';                
-//                 emailGet(null, '[' + arr[2].code + ']:买叁', nubMon);
-//             }
-//             if (arr[1]) {
-//                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[1].code},"setter":{"status":1}}).then(res=>{
-//                     console.log(arr[1].code+'修改状态成功')
-//                 })
-//                 setTimeout(() => {
-//                     let numCode = arr[1].code.substring(2, 8);
-//                     $.io.sockets.emit('news',{content: '代码：' + numCode, title: '买贰'});
-//                     let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';
-//                     emailGet(null, '[' + arr[1].code + ']:买贰', nubMon);
-//                 }, 4000);
-//             }
-//             if (arr[0]) {
-//                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[0].code},"setter":{"status":1}}).then(res=>{
-//                     console.log(arr[0].code+'修改状态成功')
-//                 })
-//                 setTimeout(() => {
-//                     let numCode = arr[0].code.substring(2, 8);
-//                     $.io.sockets.emit('news',{content: '代码：' + numCode, title: '全仓'});
-//                     let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';
-//                     emailGet(null, '[' + arr[0].code + ']:全仓', nubMon);
-//                 }, 8000);
-//             }
-//         }
-//         $.status = true; // 恢复统计
-//     });
-// });
+$.schedule.scheduleJob('10 55 14 * * 1-5', function () { // 5 56 14 * * 1-5
+    if (!$.codeIDarr1.length) return;
+    console.log('发送最新股票评分');
+    $.status = false; // 停止统计,避免占用资源
+    let list = 2; // 买几只股
+    $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade12?type=' + list).then(function (res){
+        if (res) {
+            let arr = res.data;
+            let key = 0
+            for (let name in $.flagCode) {
+                if ($.flagCode[name] !== true)  key++;
+            }
+            arr.length = list - key;
+            if (arr[2]) {
+                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[2].code},"setter":{"status":1}}).then(res=>{
+                    console.log(arr[2].code+'修改状态成功')
+                })
+                let numCode = arr[2].code.substring(2, 8);
+                $.io.sockets.emit('news',{content: '代码：' + numCode, title: '买叁'});
+                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';                
+                emailGet(null, '[' + arr[2].code + ']:买叁', nubMon);
+            }
+            if (arr[1]) {
+                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[1].code},"setter":{"status":1}}).then(res=>{
+                    console.log(arr[1].code+'修改状态成功')
+                })
+                setTimeout(() => {
+                    let numCode = arr[1].code.substring(2, 8);
+                    $.io.sockets.emit('news',{content: '代码：' + numCode, title: '买贰'});
+                    let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';
+                    emailGet(null, '[' + arr[1].code + ']:买贰', nubMon);
+                }, 4000);
+            }
+            if (arr[0]) {
+                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[0].code},"setter":{"status":1}}).then(res=>{
+                    console.log(arr[0].code+'修改状态成功')
+                })
+                setTimeout(() => {
+                    let numCode = arr[0].code.substring(2, 8);
+                    $.io.sockets.emit('news',{content: '代码：' + numCode, title: '全仓'});
+                    let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';
+                    emailGet(null, '[' + arr[0].code + ']:全仓', nubMon);
+                }, 8000);
+            }
+        }
+        $.status = true; // 恢复统计
+    });
+});
 
 // 执行任务收集信息
 // setBOX($);

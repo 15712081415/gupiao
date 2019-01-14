@@ -414,31 +414,68 @@ Array.prototype.min = function () {
   }
   // 量比记分
   function volumeFun(k_link, type) {
-      // 量比加分
-      if (!(k_link[0] && k_link[0].volume)) return 0;
-      let numner = 0;
-      let vol = k_link[0].volume;
-      for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
-          if (k_link[i] && k_link[i].volume) {
-              if (vol < k_link[i].volume) {
-                  numner++
-              } else {
-                  flag = false
-              }
-          }
-      }
-      for (let i = 1, flag = true; flag && i < k_link.length && i <= 30; i++) {
-        // if (k_link[i] && k_link[i].ks - k_link[i].js > 0) {
-        if (k_link[i] && k_link[i].status > 0) {
-            numner++
+    // 量比加分
+    if (!(k_link[0] && k_link[1] && k_link[0].volume)) return 0;
+    let numner = 0;
+    let vol = k_link[0].volume;
+    let min = k_link[0].min;
+    for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
+        if (k_link[i] && k_link[i].volume) {
+            if (vol < k_link[i].volume) {
+                numner++
+            } else {
+                flag = false
+            }
+        }
+    }
+    // for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
+    //     if (k_link[i] && k_link[i].min) {
+    //         if (min < k_link[i].min) {
+    //             numner++
+    //         } else {
+    //             flag = false
+    //         }
+    //     }
+    // }
+    for (let i = 1, flag = true; flag && i < k_link.length && i <= 30; i++) {
+        if (k_link[i] && k_link[i].ks - k_link[i].js > 0) {
+            numner = numner + 2
         } else {
             flag = false
         }
-      }
-      if (k_link[0].status > 0) {
-          numner = numner + 2
-      }
-      return numner;
+    }
+    if (k_link[0].status > 0) {
+        numner = numner + 10
+    }
+    return numner;
+
+    /* -----------------------------------*/
+    // // 量比加分
+    // if (!(k_link[0] && k_link[0].volume && k_link[0].js - k_link[0].ks > 0)) return 0;
+    // consoles.log('volumeFun ->',k_link[0])
+    // let numner = 0;
+    // let vol = k_link[0].volume;
+    // for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
+    //     if (k_link[i] && k_link[i].volume) {
+    //         if (vol < k_link[i].volume) {
+    //             numner++
+    //         } else {
+    //             flag = false
+    //         }
+    //     }
+    // }
+    // for (let i = 1, flag = true; flag && i < k_link.length && i <= 30; i++) {
+    //   if (k_link[i] && k_link[i].js - k_link[i].ks > 0) {
+    // //   if (k_link[i] && k_link[i].mean5 > k_link[i-1].mean5) {
+    //       numner++
+    //   } else {
+    //       flag = false
+    //   }
+    // }
+    // // if (k_link[1].volume) {
+    // //   numner += k_link[1].volume / vol
+    // // }
+    // return numner;
   }
 
   // 双针探底

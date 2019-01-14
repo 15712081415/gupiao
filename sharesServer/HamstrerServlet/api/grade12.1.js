@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 10; // 测试股票几率 ... 0为不测试
+  let testData = 14; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -115,7 +115,7 @@ Array.prototype.min = function () {
     bollCurr: 5, // 布林线趋势
     equilibrium: 100 // 均线分
   };
-  axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sz300059"} : {}).then(function(d) {
+  axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sz300372"} : {}).then(function(d) {
     if (d.data) {
         fileArr = d.data.filter(item => {
             return (item.codeID[2] == 6 || item.codeID[2] == 3 || item.codeID[2] == 0) && item.codeID[0] == 's';
@@ -125,27 +125,40 @@ Array.prototype.min = function () {
     init();
   })
   function api(codeID) {
-    return axios.get('http://127.0.0.1:9999/HamstrerServlet/stock_k/find?' + codeID).then(function (res) {
-      let str = iconv.decode(res.data, 'gbk');
-      strArr = str.split('var hq_str_');
-      strArr.splice(0,1);
-      strArr.forEach(item => {
-        let obj = item.split('=');
-        content[obj[0]] = obj[1].split('"').join('').split(';').join('').split(',')
-      })
-      content[codeID] = res.data.map(item => item.k_link).reverse()
+    consoles.log('api codeID->', codeID)
+    let data = {
+        stor: {timeRQ: -1},
+        data: {
+            codeID: codeID
+        }
+    }
+    return axios.post('http://127.0.0.1:9999/HamstrerServlet/stock_k/find', data).then(function (res) {
+      consoles.log('api fileArr.length->', fileArr.length, res.data.length)
+      let t = {};
+      [].filter
+      content[codeID] = res.data.filter(item => {
+          if (!t[item.timeRQ]) {
+            t[item.timeRQ] = true;
+            return true
+          }
+          return false
+      }).map(item => { 
+          return item['K-Lin']
+      });
+      consoles.log('timeRQ', content[codeID].map(item => item.timeRQ))
       curr++;
       curr >= fileArr.length && cb();
     })
   }
 
-    function init () {
-        let arr = fileArr.map(item => item.codeID);
-        for(let i = 0;i<arr.length; i++) {
-            // let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
-            api(arr[i]);
-            console.log('init', i, arr.length);
+  async function init () {
+        for(let i = 0;i<fileArr.length; i++) {
+            let item = fileArr[i]
+            await api(item.codeID);
         }
+        // fileArr.map(async function (item) {
+        //     await api(item.codeID)
+        // });
     }
     function cb (flag) {
         if (flag) {
@@ -203,7 +216,7 @@ Array.prototype.min = function () {
   function getHtml(index, len){
     console.log('indexKS', index, len);
     let item = fileArr[index];    
-    let k_link = 
+    let k_link = content[item.codeID];
     consoles.log('开始scoreNumber计算分数');
     scoreNumber(k_link, item.codeID);
     console.log('getHtml + 1');
@@ -313,30 +326,55 @@ Array.prototype.min = function () {
   // 量比记分
   function volumeFun(k_link, type) {
       // 量比加分
-      if (!(k_link[0] && k_link[0].volume)) return 0;
-      let numner = 0;
-      let vol = k_link[0].volume;
-      for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
-          if (k_link[i] && k_link[i].volume) {
-              if (vol < k_link[i].volume) {
-                  numner++
-              } else {
-                  flag = false
-              }
-          }
-      }
-      for (let i = 1, flag = true; flag && i < k_link.length && i <= 30; i++) {
-        // if (k_link[i] && k_link[i].ks - k_link[i].js > 0) {
-        if (k_link[i] && k_link[i].status > 0) {
-            numner++
-        } else {
-            flag = false
+    //   if (!(k_link[0] && k_link[0].volume && k_link[0].js - k_link[0].ks > 0)) return 0;
+    //   consoles.log('volumeFun ->',k_link[0])
+    //   let numner = 0;
+    //   let vol = k_link[0].volume;
+    //   for (let i = 1, flag = true; flag && i<k_link.length && i <= 20; i++) {
+    //       if (k_link[i] && k_link[i].volume) {
+    //           if (vol < k_link[i].volume) {
+    //               numner++
+    //           } else {
+    //               flag = false
+    //           }
+    //       }
+    //   }
+    //   for (let i = 1, flag = true; flag && i < k_link.length && i <= 20; i++) {
+    //     // if (k_link[i] && k_link[i].js - k_link[i].ks > 0) {
+    //     if (k_link[i] && k_link[i].status > 0) {
+    //         numner++
+    //     } else {
+    //         flag = false
+    //     }
+    //   }
+    //   if (k_link[1].volume) {
+    //     numner += (k_link[1].volume / vol) * 3
+    //   }
+    //   return numner;
+
+    if (!(k_link[0] && k_link[1] && k_link[0].volume)) return 0;
+    let numner = 0;
+    let vol = k_link[0].volume;
+    for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
+        if (k_link[i] && k_link[i].volume) {
+            if (vol < k_link[i].volume) {
+                numner++
+            } else {
+                flag = false
+            }
         }
+    }
+    for (let i = 1, flag = true; flag && i < k_link.length && i <= 30; i++) {
+      if (k_link[i] && k_link[i].ks - k_link[i].js > 0) {
+          numner = numner+2
+      } else {
+          flag = false
       }
-      if (k_link[0].status > 0) {
-          numner = numner + 2
-      }
-      return numner;
+    }
+    if (k_link[0].status > 0) {
+        numner = numner + 10
+    }
+    return numner;
   }
 
   // 双针探底
