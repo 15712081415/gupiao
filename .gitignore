@@ -1,4 +1,3 @@
 /sharesServer/getemail/index.js
-/sharesServer/node_modules
-/shares/node_modules
+node_modules/
 /sharesServer/data/data.json
