@@ -15,12 +15,12 @@ var transporter = nodemailer.createTransport({
     //text: text, // 文本
     html: '<h2>' + text + '</h2>' // html代码
   };
-  transporter.sendMail(mailOptions, function (err, info) {
-    if (err) {
-      callback(err,null)
-      return;
-    }
-    callback(null,info);
-  });
+  // transporter.sendMail(mailOptions, function (err, info) {
+  //   if (err) {
+  //     callback(err,null)
+  //     return;
+  //   }
+  //   callback(null,info);
+  // });
 }
 module.exports = mailer;
