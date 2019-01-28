@@ -447,6 +447,12 @@ Array.prototype.min = function () {
     if (k_link[0].status > 0) {
         numner = numner + 10
     }
+    // if (k_link[0].KDJ.J > k_link[1].KDJ.J && k_link[0].KDJ.J < 30) {
+    //     numner = numner + 2
+    // }
+    // if (k_link[0].MACD.BAR > k_link[1].MACD.BAR) {
+    //     numner = numner + 2
+    // }
     return numner;
 
     /* -----------------------------------*/
