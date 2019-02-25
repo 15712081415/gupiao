@@ -1,9 +1,7 @@
 let _ = require('underscore');
 let vm = require('vm');
 let fs = require('fs');
-let async = require('async');  
-let dbutil = require('./dbutil');
-let querystring = require('querystring');
+let async = require('async');
 let express = require('express');
 let bodyParser = require('body-parser');
 let mongoose = require('./set-server.js');
@@ -18,12 +16,6 @@ String.prototype.replaceAll = function(s1, s2) {
     while (demo.indexOf(s1) != - 1)  
     demo = demo.replace(s1, s2);  
     return demo;  
-}
-function isEmptyObject(e) {  
-    let t;  
-    for (t in e)  
-        return !1;  
-    return !0  
 }
 app.get('/HamstrerServlet/*', function(req, res){
     let data = req.query;
