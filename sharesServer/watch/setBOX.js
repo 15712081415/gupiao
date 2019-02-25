@@ -1,5 +1,3 @@
-// let url = 'http://192.168.0.101:9999'
-let url = 'http://127.0.0.1:9999'
 module.exports = function ($) {
   let current = 0;
   let arrDataCode = [];
@@ -33,8 +31,8 @@ module.exports = function ($) {
     }
   }
 
-//   $.https.post(url + '/HamstrerServlet/stock/find', {"codeID":"sh600240"}).then(function (d) {
-  $.https.get(url + '/HamstrerServlet/stock/find').then(function (d) {
+//   $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', {"codeID":"sh600240"}).then(function (d) {
+  $.https.get('http://127.0.0.1:9999/HamstrerServlet/stock/find').then(function (d) {
       // fileArr = require('../data/data.json'); // 更新错误数据
     fileArr = d.data;
     stockFind();

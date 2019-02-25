@@ -19,12 +19,6 @@ String.prototype.replaceAll = function(s1, s2) {
     demo = demo.replace(s1, s2);  
     return demo;  
 }
-function isEmptyObject(e) {  
-    let t;  
-    for (t in e)  
-        return !1;  
-    return !0  
-}
 app.get('/HamstrerServlet/*', function(req, res){
     let data = req.query;
     let stockName = req.url.replaceAll("/HamstrerServlet/", "").split("/")[0];
