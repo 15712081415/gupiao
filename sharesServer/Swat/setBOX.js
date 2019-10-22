@@ -48,10 +48,10 @@ module.exports = function ($) {
 }
   // 收集当天信息
     async function getApi(index, len) {
-        if (index >= len) return;
+        if (index >= len) return console.log($.timeRQ);
         console.log('lookData', index, len);      
         let item = fileArr[index];    
-        let data = content[item.codeID];
+        let data = content[item.codeID] || {};
         let [
         temp1, // 股票名称
         temp2, // 今日开盘价
@@ -107,6 +107,8 @@ module.exports = function ($) {
             'timeRQ': temp7,
             'MACD': null,
             'KDJ': null,
+            'WR': null,
+            'ENE': null,
             'status': Number(temp4) - Number(temp2)
         }
         o.boll = boll(item['K-Lin'], o);
@@ -127,13 +129,11 @@ module.exports = function ($) {
                     objCF[item['K-Lin'][k].timeRQ] = true;
                 }
             }
-            console.log('length ->', k_link.length)
             if (k_link[1] && !k_link[1].MACD) {
                 for (let j = k_link.length - 1; j >= 0; j--) {
                     k_link[j].MACD = MACD(k_link.slice(j, k_link.length));
                 }
             } else {
-                console.log('MACD 0 ->')
                 k_link[0].MACD = MACD(k_link);
             }
             
@@ -142,9 +142,23 @@ module.exports = function ($) {
                     k_link[j].KDJ = KDJ(k_link.slice(j, k_link.length));
                 }
             } else {
-                console.log('KDJ 0 ->')
                 k_link[0].KDJ = KDJ(k_link);
-                console.log('KDJ 1 ->')
+            }
+
+            if (k_link[1] && !k_link[1].WR) {
+                for (let j = k_link.length - 10; j >= 0; j--) {
+                    k_link[j].WR = WR(k_link.slice(j, k_link.length));
+                }
+            } else {
+                k_link[0].WR = WR(k_link);
+            }
+
+            if (k_link[1] && !k_link[1].ENE) {
+                for (let j = k_link.length - 10; j >= 0; j--) {
+                    k_link[j].ENE = ENE(k_link.slice(j, k_link.length));
+                }
+            } else {
+                k_link[0].ENE = ENE(k_link);
             }
         }
         console.log("均线")
@@ -342,13 +356,9 @@ function EMA(nub, k_link, js, name) {
     let num = 0;
     name = name || nub;
     if (k_link[1] && k_link[1].MACD && k_link[1].MACD['EMA_'+name]) {
-        num = k_link[1].MACD['EMA_' + name]*(nub - 1)/(nub+1)+js[0]*2/(nub+1);
-    } else if (k_link[1]) {
-        num = EMA(nub, k_link.slice(1, k_link.length), js.slice(1, js.length), name) * (nub - 1)/(nub+1)+js[0]*2/(nub+1);
-    } else {
-        num = js[0];
+        num = (k_link[1].MACD['EMA_' + name] || 0) * (nub - 1) / (nub+1) + js[0] * 2 / (nub + 1);
     }
-    return num;
+    return num || js[0];
 }
 function MACD(k_link) {
     let js = k_link.map(item => item.js);
@@ -358,7 +368,7 @@ function MACD(k_link) {
     obj.EMA_26 = EMA(26, k_link, js);
     obj.EMA_DIF = (Number(obj.EMA_12) - Number(obj.EMA_26));
     obj.EMA_DEA = 0.2 * obj.EMA_DIF + 0.8 * EMA(9, k_link, DEA, 'DEA');
-    obj.EMA_BAR = 2 * (obj.EMA_DIF - obj.EMA_DEA);
+    obj.EMA_BAR = (obj.EMA_DIF - obj.EMA_DEA) * 2
     return obj;
 }
 
@@ -386,17 +396,64 @@ function KDJ (list, key) {
             obj.K = 2 / 3 * k_link[1].KDJ.K+ 1 / 3 * obj.RSV;
         } else {
             console.log(4)
-            let k = k_link.splice(0,1);
+            let k = k_link.slice(0,1);
             obj.K = 2/3*KDJ(k, 'K')+1/3*obj.RSV;
         }
         if (k_link[1].KDJ && k_link[1].KDJ.D) {
             obj.D = 2 / 3 * k_link[1].KDJ.D+ 1 / 3 * obj.K;
         } else {
             console.log(5)
-            let d = k_link.splice(0,1);
+            let d = k_link.slice(0,1);
             obj.D = 2/3*KDJ(d, 'D')+1/3*obj.K;
         }
         obj.J = 3 * obj.K - 2 * obj.D;
     }
     return key ? obj[key] : obj;
+}
+
+function WR (list) {
+    if (list.length < 10) {
+        return null
+    }
+    let type = [10,6];
+    let obj = {
+    }
+    type.forEach(item => {
+        obj['WR' + item] = 100 * ( HIGH(item)- list[0].js ) / ( HIGH(item)-LOW(item) ) 
+        console.log('WR' + item, HIGH(item), LOW(item), list[0].js)
+    })
+    function HIGH (N) {
+        let arr = []
+        for (let i = 0;i < N; i++) {
+            arr.push(list[i].max)
+        }
+        return arr.max().max
+    }
+    function LOW (N) {
+        let arr = []
+        for (let i = 0;i < N; i++) {
+            arr.push(list[i].min)
+        }
+        return arr.min().min
+    }
+    return obj
+}
+
+function ENE(list) {
+    if (list.length < 10) {
+        return null
+    }
+    var N=10,
+    M1=11,
+    M2=9,
+    MA=list.slice(0, 10),
+    UPPER=(1+M1/100)*MA.sum('js'),
+    LOWER=(1-M2/100)*MA.sum('js'),
+    ENE=(UPPER + LOWER)/2;
+    let obj = {
+        UPPER,
+        LOWER,
+        ENE
+    }
+    return obj
 }

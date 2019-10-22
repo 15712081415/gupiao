@@ -76,6 +76,12 @@ module.exports = {
     
     server.listen(4000);
     let io = sio.listen(server);
+    io.on('connection',function(socket){
+        socket.on('String',function(data){
+            
+        });
+    });
+    console.log('4000')
     return io
   }
 }

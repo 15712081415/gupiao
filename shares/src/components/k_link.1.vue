@@ -361,6 +361,7 @@ export default {
     },
     MACDLink (obj, cb) {
       if (!obj) return
+      console.log('MACD', obj)
       this.status = 4
       this.obj = obj
       this.code = obj.codeID

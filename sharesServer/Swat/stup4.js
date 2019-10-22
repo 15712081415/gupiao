@@ -74,20 +74,20 @@ module.exports = function (code, flag, $) {
               console.log(err);
           });
         }
-        if ($.codeData[code] && 
-            $.codeData[code]['K-Lin'] &&
-            $.codeData[code]['K-Lin'][0] &&
-            $.codeData[code]['K-Lin'][1] &&
-            $.codeData[code]['K-Lin'][0]['MACD']['EMA_BAR'] < $.codeData[code]['K-Lin'][1]['MACD']['EMA_BAR']) {
-            if (!$.flagCode[code]) {
-                $.flagCode[code] = true;
-                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'% 暂停交易</p>';
-                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
-                emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
-                $.codeData[code].currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": 0}});
-            }
-            return
-        }
+        // if ($.codeData[code] && 
+        //     $.codeData[code]['K-Lin'] &&
+        //     $.codeData[code]['K-Lin'][0] &&
+        //     $.codeData[code]['K-Lin'][1] &&
+        //     $.codeData[code]['K-Lin'][0]['MACD']['EMA_BAR'] < $.codeData[code]['K-Lin'][1]['MACD']['EMA_BAR']) {
+        //     if (!$.flagCode[code]) {
+        //         $.flagCode[code] = true;
+        //         let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'% 暂停交易</p>';
+        //         $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
+        //         emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
+        //         $.codeData[code].currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": 0}});
+        //     }
+        //     return
+        // }
         Number(temp4) > 0 && !$.flagCode[code] && calculatingData(code, temp1);
     });
     function calculatingData(code, name) {
@@ -109,17 +109,17 @@ module.exports = function (code, flag, $) {
           console.log(code + ':分析价格!', newest,max.max, maxSum + '<' + (max.max * 0.996), min.min,minSum + '>' + (min.min * 1.004))
           console.log('maxSum:', maxSum, 'minSum:', minSum);
           if (newest > maxSum || $.soaringMax[code]) {
-              if ($.soaringMax[code] == 0) {
-                  emailGet(toEmail, $.codeData[code].name + '[' + code + ']:今日飙升中', '当前价：' + $.Sday[code][lengths].toFixed(2) + '当日平均值：' + mean.toFixed(2) + ';当日最高：' + max.max.toFixed(2) + ';上行：' + maxSum.toFixed(2) + ';上压：' + $.maxCurr[code].nub);
-                  $.soaringMax[code] = 1;
-                  $.minCurr[code].nub = 0;
-              } else if ($.soaringMax[code] == 1 && newest < max.max * 0.995) {
-                  $.soaringMax[code] = 0;
-                  item.curr = $.Sday[code][lengths].toFixed(2);
-                  $.Sday[code] = [item.curr];
-                  emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + sell[item.ztLength], '当前价：' + $.Sday[code][0]);
-                  item.currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('-', item, code)}});
-              }
+            //   if ($.soaringMax[code] == 0) {
+            //       emailGet(toEmail, $.codeData[code].name + '[' + code + ']:今日飙升中', '当前价：' + $.Sday[code][lengths].toFixed(2) + '当日平均值：' + mean.toFixed(2) + ';当日最高：' + max.max.toFixed(2) + ';上行：' + maxSum.toFixed(2) + ';上压：' + $.maxCurr[code].nub);
+            //       $.soaringMax[code] = 1;
+            //       $.minCurr[code].nub = 0;
+            //   } else if ($.soaringMax[code] == 1 && newest < max.max * 0.995) {
+            //       $.soaringMax[code] = 0;
+            //       item.curr = $.Sday[code][lengths].toFixed(2);
+            //       $.Sday[code] = [item.curr];
+            //       emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + sell[item.ztLength], '当前价：' + $.Sday[code][0]);
+            //       item.currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('-', item, code)}});
+            //   }
           } else if (newest < minSum || $.soaringMin[code]) {
               if ($.soaringMin[code] == 0) {
                   let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';

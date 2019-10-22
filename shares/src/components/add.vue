@@ -67,31 +67,25 @@
             <el-table-column
               prop="codeID"
               label="代码"
-              width="120">
+              width="90">
             </el-table-column>
             <el-table-column
               prop="name"
               label="名称"
               width="120">
             </el-table-column>
+           
             <el-table-column
-              prop="max"
-              label="上次最高"
-              width="120">
-            </el-table-column>
-            <el-table-column
-              prop="min"
-              width="120"
-              label="上次最低">
-            </el-table-column>
-            <el-table-column
-              width="120"
-              prop="mean"
-              label="上次平均价">
+              prop="currLength"
+              width="200"
+              label="仓位">
+              <template slot-scope="scope">
+                <el-input-number v-model="scope.row.currLength" @change="val => handleChange(scope.row, val)" label="描述文字"></el-input-number>
+              </template>
             </el-table-column>
             <el-table-column
               prop="timeRQ"
-              width="120"
+              width="100"
               label="日期">
             </el-table-column>
             <el-table-column
@@ -103,6 +97,9 @@
                   <template v-if="scope.row.codeID.indexOf('hk') == -1">
                     <el-radio :label="1">短线</el-radio>
                     <el-radio :label="2">长线</el-radio>
+                    <el-radio :label="4">只买</el-radio>
+                    <el-radio :label="5">只卖</el-radio>
+                    <el-radio :label="6">中线</el-radio>
                   </template>
                   <template v-else>
                     <el-radio :label="3">MACD</el-radio>
@@ -131,6 +128,14 @@
       }
     },
     methods: {
+      handleChange: function (obj, val) {
+        this.$axios.post('/api/HamstrerServlet/stock/edit', {where: {codeID: obj.codeID}, id: {'_id': obj['_id']}, setter: {currLength: val || 0}}).then(res => {
+          console.log(res)
+        }).catch((err) => {
+          this.$message('修改失败!')
+          console.log(err)
+        })
+      },
       onSubmit: function (objs, type) {
         if (type === 'all') {
           for (this.index = 0; this.index < objs.length; this.index ++) {
@@ -234,7 +239,12 @@
         }
         console.log('init ->', obj)
         this.$axios.post('/api/HamstrerServlet/stock/find', obj).then((d) => {
-          this.data = d.data
+          let data = d.data.map(item => {
+              item.currLength = item.currLength || 0
+              return item
+            })
+          this.$set(this,'data', data)
+          
         }).catch(function (response) {
           alert('刷新数据失败!')
           console.log(response)
@@ -251,3 +261,9 @@
     }
   }
 </script>
+
+<style>
+.w120{
+  width:120px;
+}
+</style>

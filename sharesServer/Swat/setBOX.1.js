@@ -2,25 +2,56 @@ module.exports = function ($) {
   let current = 0;
   let arrDataCode = [];
   let data = null;
+  let fileArr = [];
+  let content = {};
+  let curr = 0;
   $.status = {};
-  async function stockFind(d) {
-      for (let i = 0; i < d.data.length; i++) {
-        let item = d.data[i];
-        if (item) {
-            await lookData(i, d.data.length, item);
-            console.log('item', i);
-        }
-      }
+  function api(codeID) {
+    return $.https.get('http://hq.sinajs.cn/list=' + codeID, {
+//        responseType:'arraybuffer'
+    }).then(function (res) {
+    //   let str = iconv.decode(res.data, 'gbk');
+      let strArr = res.data.split('var hq_str_');
+      strArr.splice(0,1);
+      strArr.forEach(item => {
+        let obj = item.split('=');
+        content[obj[0]] = obj[1].split('"').join('').split(';').join('').split(',')
+      })
+      curr++;
+      console.log('api ->', curr)
+      curr * 200 >= fileArr.length && cb();
+    })
   }
+  async function stockFind() {
+    let arr = fileArr.map(item => item.codeID);
+    for(let i = 0;i<arr.length; i+=200) {
+        let codeArr = arr.slice(i, i + 200 < arr.length ? i + 200 : arr.length).toString();
+        await api(codeArr);
+        console.log('init', i, arr.length);
+    }
+  }
+
 //   $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', {"codeID":"sh600240"}).then(function (d) {
   $.https.get('http://127.0.0.1:9999/HamstrerServlet/stock/find').then(function (d) {
-    stockFind(d)
+      // fileArr = require('../data/data.json'); // 更新错误数据
+    fileArr = d.data;
+    stockFind();
   });
+  function cb (flag) {
+    if (flag) {
+        MaxNumber = [];
+    }
+    console.log('arr 1');
+    let arr = fileArr.map(item => item.codeID);
+    console.log('arr 2');
+    getApi(0, arr.length);
+}
   // 收集当天信息
-  function lookData(index, len, item) {
-    async function getApi(res) {
+    async function getApi(index, len) {
+        if (index >= len) return;
         console.log('lookData', index, len);      
-        let data = res.data.split('=')[1].split('"').join('').split(';').join('').split(',');
+        let item = fileArr[index];    
+        let data = content[item.codeID];
         let [
         temp1, // 股票名称
         temp2, // 今日开盘价
@@ -54,7 +85,7 @@ module.exports = function ($) {
         ]
         if (Number(temp4) == 0) {
             current++
-            lookData(index + 1, len)
+            getApi(index+1, len);
             return;
         }
         let code = item.codeID;
@@ -83,6 +114,7 @@ module.exports = function ($) {
         mean10 = [(Number(temp5) + Number(temp6)) / 2];
         min10 = [Number(temp6)];
         max10 = [Number(temp5)];
+        console.log("item['K-Lin']", !!item['K-Lin'])
         if (item['K-Lin']) {
             let objCF = {}
             objCF[o.timeRQ] = true
@@ -95,21 +127,27 @@ module.exports = function ($) {
                     objCF[item['K-Lin'][k].timeRQ] = true;
                 }
             }
-            if (!k_link[1].MACD) {
+            console.log('length ->', k_link.length)
+            if (k_link[1] && !k_link[1].MACD) {
                 for (let j = k_link.length - 1; j >= 0; j--) {
                     k_link[j].MACD = MACD(k_link.slice(j, k_link.length));
                 }
             } else {
+                console.log('MACD 0 ->')
                 k_link[0].MACD = MACD(k_link);
             }
-            if (!k_link[1].KDJ) {
+            
+            if (k_link[1] && !k_link[1].KDJ) {
                 for (let j = k_link.length - 9; j >= 0; j--) {
                     k_link[j].KDJ = KDJ(k_link.slice(j, k_link.length));
                 }
             } else {
+                console.log('KDJ 0 ->')
                 k_link[0].KDJ = KDJ(k_link);
+                console.log('KDJ 1 ->')
             }
         }
+        console.log("均线")
         // 计算5，10均线
         if (5 < k_link.length) {
             k_link[0].mean5 = k_link.slice(0, 5).sum('js');
@@ -140,20 +178,15 @@ module.exports = function ($) {
         };
         console.log('edit ->', index);
         if (obj.max) {
-            await editData(item.codeID, obj, index);
+            await addData(item.codeID, obj, index, len);
+            await editData(item.codeID, obj, index, len);
+            getApi(index+1, len);
+        } else {
+            getApi(index+1, len);
         }
-      }
-
-      return $.https.get('http://hq.sinajs.cn/list=' + item.codeID, {
-          'responseType': 'text/plain;charset=utf-8',
-          'header': 'text/plain;charset=utf-8'
-      }).then(getApi).catch(err => {
-        !$.status[index + len] && lookData(index, len, item);
-        $.status[index + len] = true;
-      });
-  }
-  function editData (codeID, obj, index) {
-      return $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit', {
+    }
+  function editData (codeID, obj, index, len) {
+    return $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit', {
           where: { codeID: codeID },
           setter: obj
       }).then(function (res) {
@@ -161,6 +194,19 @@ module.exports = function ($) {
       }).catch(function (err) {
           console.log('失败 ', codeID + '-->', index);
       })
+  }
+
+  function addData (codeID, obj, index, len) {
+      let data = {
+        'codeID': codeID,
+        'K-Lin': obj['K-Lin'][0],
+        'timeRQ': obj.timeRQ
+      };
+    return $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock_k/add', data).then(function (res) {
+        console.log('成功 ' + codeID + '-->', index);
+    }).catch(function (err) {
+        console.log('失败 ', codeID + '-->', index);
+    })
   }
 }
 // 计算布林值
@@ -208,6 +254,7 @@ function maxJudgeAdd(arrData) {
     let i = 0,
         n = 0,
         maxData = [],
+        mean = arrData.sum(),
         arr = [];
     for(i = 0; i < arrData.length; i++) {
         if(arrData[i] > mean) {
@@ -228,6 +275,7 @@ function maxJudgeMinus(arrData) {
     let i = 0,
         n = 0,
         minData = [],
+        mean = arrData.sum(),
         arr = [];
     for(i = 0; i < arrData.length; i++) {
         if(arrData[i] < mean) {
@@ -316,7 +364,8 @@ function MACD(k_link) {
 
 
 // KDJ
-function KDJ (k_link, key) {
+function KDJ (list, key) {
+    let k_link = list;
     let [max, min] = [k_link[0].max,k_link[0].min]
     let obj = {
         RSV: 0,
@@ -324,21 +373,28 @@ function KDJ (k_link, key) {
         D: 50,
         J: 50
     };
+    console.log(1)
     if (k_link[8]) {
+        console.log(2)
         for (let i=1;i<9;i++) {
             if (k_link[i].max > max) max = k_link[i].max;
             if (k_link[i].min < min) min = k_link[i].min;
         }
+        console.log(3, k_link.length)
         obj.RSV = (k_link[0].js-min)/(max-min)*100;
-        if (k_link[1].KDJ && k_link[1].KDJ.k) {
-            obj.K = 2 / 3 * k_link[1].KDJ.k+ 1 / 3 * obj.RSV;
+        if (k_link[1].KDJ && k_link[1].KDJ.K) {
+            obj.K = 2 / 3 * k_link[1].KDJ.K+ 1 / 3 * obj.RSV;
         } else {
-            obj.K = 2/3*KDJ(k_link.slice(1, k_link.length), 'K')+1/3*obj.RSV;
+            console.log(4)
+            let k = k_link.splice(0,1);
+            obj.K = 2/3*KDJ(k, 'K')+1/3*obj.RSV;
         }
         if (k_link[1].KDJ && k_link[1].KDJ.D) {
             obj.D = 2 / 3 * k_link[1].KDJ.D+ 1 / 3 * obj.K;
         } else {
-            obj.D = 2/3*KDJ(k_link.slice(1, k_link.length), 'D')+1/3*obj.K;
+            console.log(5)
+            let d = k_link.splice(0,1);
+            obj.D = 2/3*KDJ(d, 'D')+1/3*obj.K;
         }
         obj.J = 3 * obj.K - 2 * obj.D;
     }

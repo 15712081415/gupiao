@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 20; // 测试股票几率 ... 0为不测试
+  let testData = 0; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -100,7 +100,7 @@ Array.prototype.min = function () {
       all: 0,
       err: 0,
       min: 0,
-      max: 0,
+      max: 0,   
       ok: 0
   };
   let fileArr = [];
@@ -115,7 +115,7 @@ Array.prototype.min = function () {
     bollCurr: 5, // 布林线趋势
     equilibrium: 100 // 均线分
   };
-  axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sz300059"} : {}).then(function(d) {
+  axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sz300545"} : {}).then(function(d) {
     if (d.data) {
         fileArr = d.data.filter(item => {
             return (item.codeID[2] == 6 || item.codeID[2] == 3 || item.codeID[2] == 0) && item.codeID[0] == 's';
@@ -195,7 +195,7 @@ Array.prototype.min = function () {
             }
         } else {
             if (!MaxNumber.length) return res.send('[]');
-            // emailGet(null, '评分', str);
+            emailGet(null, '评分', str);
             let Arr = MaxNumber.val;
             res.send(JSON.stringify(Arr.slice(0, Number(type))));
         }
@@ -204,7 +204,7 @@ Array.prototype.min = function () {
   function getHtml(index, len){
     console.log('indexKS', index, len);
     let item = fileArr[index];    
-    let data = content[item.codeID];
+    let data = content[item.codeID] || {};
     if (!(fileArr[index] && fileArr[index]['K-Lin'] && data)) {
         return consoles.log('not K-Lin');
     }
@@ -244,7 +244,7 @@ Array.prototype.min = function () {
         consoles.log('劣质股！');
         return;
     }
-    if (Number(temp4) == 0 || (Number(temp4) - Number(temp3)) / Number(temp3) > 0.08) {
+    if (Number(temp4) < 5 || (Number(temp4) - Number(temp3)) / Number(temp3) > 0.08) {
         consoles.log('max 5%');
         return;
     }
@@ -266,9 +266,8 @@ Array.prototype.min = function () {
         'timeRQ': temp7,
         'status': Number(temp4) - Number(temp2)
     }
-    console.log('boll');
-    o.boll = boll(item['K-Lin'], o);
     if (!item['K-Lin'][0] || item['K-Lin'][0].timeRQ != o.timeRQ) {
+        o.boll = boll(item['K-Lin'], o);
         k_link = [o];
     }
     if (item['K-Lin']) {
@@ -321,15 +320,18 @@ Array.prototype.min = function () {
         // let Dip = doubleNeedeDip(k__link);
         // score.numner += Dip.val;
         // consoles.log('doubleNeedeDip  ------>',code, score);
-        score.numner += goUp(k__link);
+        // score.numner += goUp(k__link);
         // score.numner += kdjUp(k__link);
+
         // score.numner += macdUp(k__link);
-        // score.numner += macdNull(k__link);
+        score.numner += macdNull(k__link);
         // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
         // score.numner += bollCurr(k__link);
         // consoles.log('scoreNumber bollCurr -->', score.numner);
         // consoles.log('bollCurr  ------>',code, score);
-        score.numner += volumeFun(k__link);
+        // score.numner += volumeFun(k__link) * 10;
+        // score.numner += WrFun(k__link);
+        // score.numner += EneFun(k__link);
         // consoles.log('volumeFun  ------>',code, score);
         // score.numner += NeedeDip(k__link);
         // score.numner -= equilibrium(k__link, null);
@@ -413,71 +415,65 @@ Array.prototype.min = function () {
     return nub;
   }
   // 量比记分
-  function volumeFun(k_link, type) {
+  function volumeFun(k_link) {
     // 量比加分
-    if (!(k_link[0] && k_link[1] && k_link[0].volume)) return 0;
-    let numner = 0;
-    let vol = k_link[0].volume;
-    let min = k_link[0].min;
-    for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
-        if (k_link[i] && k_link[i].volume) {
-            if (vol < k_link[i].volume) {
-                numner++
-            } else {
-                flag = false
-            }
-        }
-    }
-    // for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
-    //     if (k_link[i] && k_link[i].min) {
-    //         if (min < k_link[i].min) {
-    //             numner++
-    //         } else {
-    //             flag = false
-    //         }
-    //     }
-    // }
-    for (let i = 1, flag = true; flag && i < k_link.length && i <= 30; i++) {
-        if (k_link[i] && k_link[i].ks - k_link[i].js > 0) {
-            numner = numner + 2
-        } else {
-            flag = false
-        }
-    }
-    if (k_link[0].status > 0) {
-        numner = numner + 10
-    }
-    return numner;
+    if (!(k_link[0] && k_link[1] && k_link[0].volume )) return 0;
+    if (k_link[0].mean30 > k_link[1].mean30 ||
+        k_link[0].mean20 > k_link[1].mean20 ||
+        k_link[0].ks > k_link[0].mean5 || 
+        k_link[0].js < k_link[0].mean5 ||
+        k_link[0].status < 0
+    ) return 0;
 
-    /* -----------------------------------*/
-    // // 量比加分
-    // if (!(k_link[0] && k_link[0].volume && k_link[0].js - k_link[0].ks > 0)) return 0;
-    // consoles.log('volumeFun ->',k_link[0])
-    // let numner = 0;
-    // let vol = k_link[0].volume;
-    // for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
-    //     if (k_link[i] && k_link[i].volume) {
-    //         if (vol < k_link[i].volume) {
-    //             numner++
-    //         } else {
-    //             flag = false
-    //         }
-    //     }
-    // }
-    // for (let i = 1, flag = true; flag && i < k_link.length && i <= 30; i++) {
-    //   if (k_link[i] && k_link[i].js - k_link[i].ks > 0) {
-    // //   if (k_link[i] && k_link[i].mean5 > k_link[i-1].mean5) {
-    //       numner++
-    //   } else {
-    //       flag = false
-    //   }
-    // }
-    // // if (k_link[1].volume) {
-    // //   numner += k_link[1].volume / vol
-    // // }
-    // return numner;
+    let arr = [];
+    let all = [];
+    for (let i = 0; i<k_link.length && i <= 3; i++) {
+        arr.push(k_link[i].volume)
+    }
+    let numner = k_link[0].volume / arr.sum()
+    
+    return numner;
+  }
+  
+  function WrFun (k_link) {
+    if (!(k_link[0] && k_link[1] && k_link[0].WR && k_link[1].WR)) return 0;
+    if (k_link[0].mean30 < k_link[1].mean30 
+        || k_link[0].mean20 < k_link[1].mean20 
+        || k_link[0].WR.WR6 < 80 
+        // || k_link[0].WR.WR6 > k_link[1].WR.WR6 
+        // || k_link[0].WR.WR10 > k_link[1].WR.WR10
+    ) return 0;
+    let arr = [];
+    for (let i = 0; i<k_link.length && i < 20; i++) {
+        if (k_link[i] && k_link[i].WR) {
+            arr.push(k_link[i].WR.WR6)
+        }
+    }
+    if (arr.sum() > 60) return 0;
+    let numner = (k_link[0].WR.WR6 + k_link[0].WR.WR10 + k_link[1].WR.WR6 + k_link[1].WR.WR10) / 40
+    return numner
   }
 
+  function EneFun (k_link) {
+    if (!(k_link[0] && k_link[1] && k_link[0].ENE && k_link[1].ENE)) return 0;
+    // if (
+    //     // k_link[0].mean30 < k_link[1].mean30
+    //     // || 
+    //     // k_link[0].mean20 < k_link[1].mean20
+    //     // || 
+    //     k_link[0].ENE.ENE < k_link[1].ENE.ENE
+    // ) return 0;
+    for (let i = 1; i<k_link.length && i < 5; i++) {
+        if (k_link[i] && k_link[i].ENE && k_link[i].js < k_link[i].ENE.LOWER) {
+            return 0;
+        }
+    }
+    let numner = 0;
+    if (k_link[0].js < k_link[0].ENE.LOWER) {
+        numner = k_link[0].ENE.LOWER / k_link[0].js * 100
+    }
+    return numner
+  }
   // 双针探底
   function doubleNeedeDip (k_link) {
     consoles.log('doubleNeedeDip k_link ------>', k_link[0].timeRQ);
@@ -539,104 +535,97 @@ Array.prototype.min = function () {
   // 追涨记分
   function goUp(k_link) {
     let nub = 0;
-    for (let i = 0, type = 0; i < k_link.length &&
-        k_link[i] &&
-        k_link[i+1] &&
-        k_link[i].volume &&
-        k_link[i+1].volume &&
-        k_link[i].volume > k_link[i+1].volume; i++) {
-        nub++
+    if (!(k_link[0] && k_link[1] && k_link[0].WR)) return 0
+    if (k_link[0].mean30 < k_link[1].mean30 
+        || k_link[0].mean20 < k_link[1].mean20
+        || k_link[0].max < k_link[1].max
+        || k_link[0].min < k_link[1].min
+        || k_link[0].status < 0
+    ) {
+        return 0
     }
-    return nub;
+
+    return k_link[0].WR.WR6;
   }
   // MACD
   function macdUp (k_link) {
     let nub = 0;
     if (k_link[0] && k_link[1] && k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
-        // if (k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR) {
-        //     nub += 20;
-        // }
-        // let mean1 = k_link[0].mean5 - k_link[0].mean10;
-        // let mean2 = k_link[1].mean5 - k_link[1].mean10;
-        // if (mean1 > mean2) {
-        //     nub += 10;
-        // }
-        // nub -= k_link[0].mean5 > k_link[0].mean10 ?
-        // (k_link[0].mean5 / k_link[0].mean10 - 1) * 100 :
-        // (k_link[0].mean10 / k_link[0].mean5 - 1) * 100 ;
-        // let num = 0;
-        // for (let i=0; i < k_link.length && i < 10; i++) {
-        //     num += (k_link[i].max / k_link[i].min) * 100
-        // }
-        // nub += num / 10;
-        for(let i=0, flag=true;i<k_link.length && flag;i++) {
+        for(let i=0, flag=0;i<k_link.length && flag < 2;i++) {
             if (k_link[i] && k_link[i+1]) {
-                if (k_link[i].MACD && k_link[i+1].MACD && k_link[i].MACD.EMA_BAR > k_link[i+1].MACD.EMA_BAR) {
-                    nub += 1;
-                    if (k_link[i+2] && k_link[i+2].MACD && k_link[i].MACD.EMA_BAR - k_link[i+1].MACD.EMA_BAR > k_link[i+1].MACD.EMA_BAR - k_link[i+2].MACD.EMA_BAR) {
-                        nub += 1;
+                if (flag == 0) {
+                    if (i < 1 && k_link[i].MACD.EMA_BAR > k_link[i+1].MACD.EMA_BAR) {
+                        nub = nub + 2
+                    } else {
+                        flag++
                     }
-                } else {
-                    flag = false;
-                }
-                if (k_link[i].KDJ && k_link[i+1].KDJ && k_link[i].KDJ.J > k_link[i+1].KDJ.J) {
-                    nub += 1;
-                }
-                if (k_link[i].mean5 - k_link[i+1].mean5 < 0) {
-                    flag = false;
+                } else if (flag == 1) {
+                    if (k_link[i].MACD.EMA_BAR < k_link[i+1].MACD.EMA_BAR) {
+                        nub++                         
+                    } else {
+                        flag++
+                    }
                 }
             }
         }
-        let mean = k_link[0].mean5 > k_link[0].mean10 ? k_link[0].mean5 / k_link[0].mean10 : k_link[0].mean10 / k_link[0].mean5;
-        nub -= (mean - 1) * 1000
     }
     return nub < 0 ? 0 : nub;
   }
   // MACD 0
   function macdNull (k_link) {
-      if (!(k_link[0] && k_link[0].status > 0)) return 0;
-    let nub = 100;
-    // if (k_link[0] && k_link[1] && k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
-    //     if (k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR) {
-    //         nub += 20;
-    //     } else {
-    //         return 0
-    //     }
-    //     let meanNub = 0;
-    //     let i=0;
-    //     for (;i < k_link.length && i < 5; i++) {
-    //         meanNub += k_link[i].max / k_link[i].min - 1;
-    //     }
-    //     nub += meanNub / (i-1);
-    //     nub -= k_link[0].MACD.EMA_BAR > 0 ? k_link[0].MACD.EMA_BAR * 100 : k_link[0].MACD.EMA_BAR * (-100);
-    // }
-    let sum = [];
-    k_link.forEach(item => {
-        if (item.MACD) {
-            sum.push(item.MACD.EMA_BAR)
+    if (!(k_link[0] && k_link[0].status > 0)) return 0;
+    let nub = 0;
+    if (k_link[0] && k_link[1] && k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
+        if (k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR && k_link[1].MACD.EMA_BAR < k_link[2].MACD.EMA_BAR) {
+            nub += 1;
+        } else {
+            return 0
         }
-    })
-    sum = k_link[0].MACD.EMA_BAR - (sum.sum() - 0.05)
-    nub = 100 - (sum > 0 ? sum : sum * -1) * 100
-      return nub < 0 ? 0 : nub;
+        nub += -100 *  k_link[1].MACD.EMA_BAR
+    }
+    return nub < 1 ? 0 : nub;
   }
   // kdj JKD
   function kdjUp (k_link) {
+    if (k_link[0] && k_link[0].status > 0) return 0;
     let nub = 0;
-    if (k_link[0] && k_link[1] && k_link[0].KDJ && k_link[1].KDJ && k_link[0].KDJ.J && k_link[1].KDJ.J) {
-        if (k_link[0].KDJ.K > 50 ||
-            k_link[0].KDJ.J < k_link[1].KDJ.J || 
-            k_link[0].status < 0) return 0;
+    // if (k_link[0] && k_link[1] && k_link[0].KDJ && k_link[1].KDJ && k_link[0].KDJ.J && k_link[1].KDJ.J) {
+    //     if (k_link[0].KDJ.K > 50 ||
+    //         k_link[0].KDJ.J < k_link[1].KDJ.J || 
+    //         k_link[0].status < 0) return 0;
         
-        nub += 100;
-        let sum = k_link[0].KDJ.J + k_link[0].KDJ.D + k_link[0].KDJ.K
-        let J = sum - k_link[0].KDJ.J
-        let D = sum - k_link[0].KDJ.D
-        let K = sum - k_link[0].KDJ.K
-        nub -= J < 0 ? J * -1 : J
-        nub -= D < 0 ? D * -1 : D
-        nub -= K < 0 ? K * -1 : K
+    //     nub += 100;
+    //     let sum = k_link[0].KDJ.J + k_link[0].KDJ.D + k_link[0].KDJ.K
+    //     let J = sum - k_link[0].KDJ.J
+    //     let D = sum - k_link[0].KDJ.D
+    //     let K = sum - k_link[0].KDJ.K
+    //     nub -= J < 0 ? J * -1 : J
+    //     nub -= D < 0 ? D * -1 : D
+    //     nub -= K < 0 ? K * -1 : K
+    // }
+    if (k_link) {
+        for(let i=0, flag=true;i<k_link.length && flag;i++) {
+            if (k_link[i] && k_link[i+1] && k_link[i+1].KDJ) {
+                if (k_link[i+1].KDJ.J > k_link[i].KDJ.J && k_link[i].KDJ.J < -3) {
+                    nub++
+                } else {
+                    flag = false
+                }
+            } else {
+                flag = false
+            }
+        }
+        for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
+            if (k_link[i] && k_link[i].volume) {
+                if (k_link[0].volume < k_link[i].volume) {
+                    nub++
+                } else {
+                    flag = false
+                }
+            }
+        }
     }
+
     return nub < 0 ? 0 : nub;
   }
   function NeedeDip (k_link) {
@@ -722,17 +711,14 @@ Array.prototype.min = function () {
   }
 
   // MACD
+// MACD
 function EMA(nub, k_link, js, name) {
     let num = 0;
     name = name || nub;
     if (k_link[1] && k_link[1].MACD && k_link[1].MACD['EMA_'+name]) {
-        num = k_link[1].MACD['EMA_' + name]*(nub - 1)/(nub+1)+js[0]*2/(nub+1);
-    } else if (k_link[1]) {
-        num = EMA(nub, k_link.slice(1, k_link.length), js.slice(1, js.length), name) * (nub - 1)/(nub+1)+js[0]*2/(nub+1);
-    } else {
-        num = js[0];
+        num = (k_link[1].MACD['EMA_' + name] || 0) * (nub - 1) / (nub+1) + js[0] * 2 / (nub + 1);
     }
-    return num;
+    return num || js[0];
 }
 function MACD(k_link) {
     let js = k_link.map(item => item.js);
@@ -742,7 +728,7 @@ function MACD(k_link) {
     obj.EMA_26 = EMA(26, k_link, js);
     obj.EMA_DIF = (Number(obj.EMA_12) - Number(obj.EMA_26));
     obj.EMA_DEA = 0.2 * obj.EMA_DIF + 0.8 * EMA(9, k_link, DEA, 'DEA');
-    obj.EMA_BAR = 2 * (obj.EMA_DIF - obj.EMA_DEA);
+    obj.EMA_BAR = (obj.EMA_DIF - obj.EMA_DEA) * 2
     return obj;
 }
 

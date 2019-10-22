@@ -141,7 +141,8 @@
 				<input type=text"" id="biao1"></input>
 			</div>
 		</div>
-		<a onclick="test()">测试</a>
+		<a onclick="test()">测试</a><br />
+		<a onclick="test1()">socket</a>
 	</body>
 	<script type="text/javascript">
 		var socket = io.connect();
@@ -183,6 +184,11 @@
 					'<li><a href="#" data-index="'+ (length+9) +'" onclick="clickFun(this, \'代码：300059\')"><b>买贰</b></a></li>'
 				].join('');
 				dom.html(str);
+		}
+		function test1 () {
+			socket.emit('String', {a:1}, function (res) {
+				console.log(res);
+			});
 		}
 	</script>
 </html>

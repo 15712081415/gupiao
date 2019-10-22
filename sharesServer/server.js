@@ -17,15 +17,10 @@ String.prototype.replaceAll = function(s1, s2) {
     demo = demo.replace(s1, s2);  
     return demo;  
 }
+
 app.get('/HamstrerServlet/*', function(req, res){
-    let data = req.query;
-    let stockName = req.url.replaceAll("/HamstrerServlet/", "").split("/")[0];
-    let sandbox = {  
-        req: req,  
-        res: res,
+    let sandbox = {
         async: async,
-        data: data,
-        stockName: stockName,
         mongoose: mongoose,
         Schema: Schema,
         MyList: MyList,
@@ -34,9 +29,14 @@ app.get('/HamstrerServlet/*', function(req, res){
         console: console,
         iconv: iconv,
         setTimeout: setTimeout
-    };
-    let url = req.url.split('?')[0];
-    fs.readFile('.' + url + '.js', function(err, fileData) {
+    }
+    Object.assign(sandbox, {  
+        req: req,  
+        res: res,
+        data: req.query,
+        stockName: req.url.replaceAll("/HamstrerServlet/", "").split("/")[0]
+    });
+    fs.readFile('.' + req.url.split('?')[0] + '.js', function(err, fileData) {
         vm.runInNewContext(fileData, sandbox, 'myfile.vm');
     });
 });
@@ -61,12 +61,8 @@ app.post('/HamstrerServlet/*', jsonParser, function(req, res){
         });
     }
     let stockName = req.url.replaceAll("/HamstrerServlet/", "").split("/")[0];
-    let sandbox = {  
-        req: req,  
-        res: res,
+    let sandbox = {
         async: async,
-        data: jsonStr,
-        stockName: stockName,
         mongoose: mongoose,
         Schema: Schema,
         MyList: MyList,
@@ -75,7 +71,13 @@ app.post('/HamstrerServlet/*', jsonParser, function(req, res){
         console: console,
         iconv: iconv,
         setTimeout: setTimeout
-    };
+    }
+    Object.assign(sandbox, {
+        req: req,  
+        res: res,
+        data: jsonStr,
+        stockName: stockName
+    });
     fs.readFile('.' + req.url + '.js', function(err, fileData) {
         vm.runInNewContext(fileData, sandbox, 'myfile.vm');
     });
