@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 0; // 测试股票几率 ... 0为不测试
+  let testData = 10; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -101,7 +101,8 @@ Array.prototype.min = function () {
       err: 0,
       min: 0,
       max: 0,   
-      ok: 0
+      ok: 0,
+      z: 0
   };
   let fileArr = [];
   let content = {};
@@ -127,19 +128,19 @@ Array.prototype.min = function () {
   function api(codeID) {
     return axios.get('http://hq.sinajs.cn/list=' + codeID, {
        responseType:'arraybuffer'
-    }).then(function (res) {
-      let str = iconv.decode(res.data, 'gbk');
-      strArr = str.split('var hq_str_');
-      strArr.splice(0,1);
-      strArr.forEach(item => {
-        let obj = item.split('=');
-        content[obj[0]] = obj[1].split('"').join('').split(';').join('').split(',')
-      })
-      curr++;
-      curr * 200 >= fileArr.length && cb();
-    })
+    }).then(api_res)
   }
-
+  function api_res (res) {
+    let str = iconv.decode(res.data, 'gbk');
+    strArr = str.split('var hq_str_');
+    strArr.splice(0,1);
+    strArr.forEach(item => {
+      let obj = item.split('=');
+      content[obj[0]] = obj[1].split('"').join('').split(';').join('').split(',')
+    })
+    curr++;
+    curr * 200 >= fileArr.length && cb();
+  }
     function init () {
         let arr = fileArr.map(item => item.codeID);
         for(let i = 0;i<arr.length; i+=200) {
@@ -189,7 +190,10 @@ Array.prototype.min = function () {
                 });
                 up.length && statusUp.UP.push(up);
                 dn.length && statusUp.DN.push(dn);
-                statusUp.ok += a.filter(item => item.status).length;
+                statusUp.ok += a.filter(item => {
+                    statusUp.z += item.upNub
+                    return item.status
+                }).length;
                 testCurr = testCurr+1;
                 cb(true);
             }
@@ -244,7 +248,7 @@ Array.prototype.min = function () {
         consoles.log('劣质股！');
         return;
     }
-    if (Number(temp4) < 5 || (Number(temp4) - Number(temp3)) / Number(temp3) > 0.08) {
+    if (Number(temp4) < 5 || (Number(temp4) - Number(temp3)) / Number(temp3) > 0.095) {
         consoles.log('max 5%');
         return;
     }
@@ -324,7 +328,8 @@ Array.prototype.min = function () {
         // score.numner += kdjUp(k__link);
 
         // score.numner += macdUp(k__link);
-        score.numner += macdNull(k__link);
+        // score.numner += macdNull(k__link);
+        score.numner += goBottom(k__link);
         // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
         // score.numner += bollCurr(k__link);
         // consoles.log('scoreNumber bollCurr -->', score.numner);
@@ -547,6 +552,35 @@ Array.prototype.min = function () {
 
     return k_link[0].WR.WR6;
   }
+  function goBottom (k_link) {
+    let n = 0;
+    let num = 0;
+    for (var i = 0; i < 29 && k_link[i] && n < 2; i++) {
+        if (n === 0) {
+            if (!k_link[i] || !k_link[i+1] || k_link[i+1].js > k_link[i].js) {
+                return 0
+            }
+            n++
+        } else {
+            if (k_link[i] && k_link[i+1] && k_link[i+1].js > k_link[i].js) {
+                if (k_link[0].volume < k_link[i+1].volume) {
+                    num++
+                }
+                num++
+            } else {
+                n++
+            }
+        }
+    }
+    if (k_link[0].volume > k_link[1].volume) {
+        return  0
+    }
+    if (k_link[0].MACD.EMA_BAR < k_link[1].MACD.EMA_BAR) {
+        return  0
+    }
+    num += 10 - (k_link[0].MACD.EMA_BAR > 0 ? k_link[0].MACD.EMA_BAR : k_link[0].MACD.EMA_BAR * -1);
+    return num ? num : 0
+  }
   // MACD
   function macdUp (k_link) {
     let nub = 0;
@@ -573,9 +607,15 @@ Array.prototype.min = function () {
   }
   // MACD 0
   function macdNull (k_link) {
-    if (!(k_link[0] && k_link[0].status > 0)) return 0;
+    if (!(k_link[0] && k_link[1] && k_link[0].status > 0)) return 0;
+    if (!k_link[0] && !k_link[2] && k_link[0].js > k_link[2].js) return 0
     let nub = 0;
-    if (k_link[0] && k_link[1] && k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
+    let flage = false
+    for(var i = 0; i < 4 && k_link[i] && k_link[i + 1]; i++) {
+        if (parseInt((k_link[i].js - k_link[i + 1].js) / k_link[i + 1].js * 10000) / 100 < -5) flage = true
+    }
+    if (!flage) return 0;
+    if (k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
         if (k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR && k_link[1].MACD.EMA_BAR < k_link[2].MACD.EMA_BAR) {
             nub += 1;
         } else {
@@ -585,6 +625,25 @@ Array.prototype.min = function () {
     }
     return nub < 1 ? 0 : nub;
   }
+//   function macdNull (k_link) {
+//     if (!(k_link[1] && k_link[2] && k_link[1].status > 0)) return 0;
+//     if (!k_link[1] && !k_link[3] && k_link[1].js > k_link[3].js) return 0
+//     if (k_link[0] && parseInt((k_link[0].js - k_link[1].js) / k_link[1].js * 10000) / 100 > 0) return 0
+//     let nub = 0;
+//     for(var i = 1; i < 4 && k_link[i] && k_link[i + 1]; i++) {
+//         if (parseInt((k_link[i].js - k_link[i + 1].js) / k_link[i + 1].js * 10000) / 100 > 3) return 0
+//     }
+//     if (k_link[3] && k_link[1].MACD && k_link[2].MACD && k_link[3].MACD) {
+//         if (k_link[1].MACD.EMA_BAR > k_link[2].MACD.EMA_BAR && k_link[2].MACD.EMA_BAR < k_link[3].MACD.EMA_BAR) {
+//             nub += 1;
+//         } else {
+//             return 0
+//         }
+//         nub += -100 *  k_link[2].MACD.EMA_BAR
+//     }
+
+//     return nub < 1 ? 0 : nub;
+//   }
   // kdj JKD
   function kdjUp (k_link) {
     if (k_link[0] && k_link[0].status > 0) return 0;

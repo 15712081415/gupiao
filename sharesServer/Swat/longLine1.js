@@ -64,7 +64,7 @@ module.exports = function (code, flag, $) {
         let stop = (parseInt((temp5 - temp3) / temp3 * 10000) / 100) || 0;
         let currEnt = parseInt((temp4 - temp3) / temp3 * 10000) / 100;
         console.log(code + '检测行情', currEnt + '%', stop);
-        if (!$.openVal[code]) $.openVal[code] = {v:temp3, s: currEnt};        
+        $.openVal[code] = {v:temp3, s: currEnt};
         // if (currEnt < -9) {
         //     if (!$.flagCode[code]) {
         //         $.flagCode[code] = true;
@@ -74,20 +74,20 @@ module.exports = function (code, flag, $) {
         //     }
         //     return
         // }
-        if ($.codeData[code] && 
-            $.codeData[code]['K-Lin'] &&
-            $.codeData[code]['K-Lin'][0] &&
-            $.codeData[code]['K-Lin'][1] &&
-            $.codeData[code]['K-Lin'][0]['MACD']['EMA_BAR'] < $.codeData[code]['K-Lin'][1]['MACD']['EMA_BAR']) {
-            if (!$.flagCode[code]) {
-                $.flagCode[code] = true;
-                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'% 暂停交易</p>';
-                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
-                emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
-                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status": 0}});
-            }
-            return
-        }
+        // if ($.codeData[code] && 
+        //     $.codeData[code]['K-Lin'] &&
+        //     $.codeData[code]['K-Lin'][0] &&
+        //     $.codeData[code]['K-Lin'][1] &&
+        //     $.codeData[code]['K-Lin'][0]['MACD']['EMA_BAR'] < $.codeData[code]['K-Lin'][1]['MACD']['EMA_BAR']) {
+        //     if (!$.flagCode[code]) {
+        //         $.flagCode[code] = true;
+        //         let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'% 暂停交易</p>';
+        //         $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
+        //         emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
+        //         $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status": 0}});
+        //     }
+        //     return
+        // }
         temp4 > 0 && flag && calculatingData(code, temp1);
     });
     function calculatingData(code, name) {
@@ -182,10 +182,10 @@ module.exports.endEmail = function ($) {
     for (let item in $.codeIDarr6) {
         let code = $.codeIDarr6[item].codeID;
         if (code) {
-            if (!$.openVal[code] || $.openVal[code].s < 9.9) {
+            if (!$.openVal[code] || ($.openVal[code].s < 9.9 && $.openVal[code].s > 0)) {
                     $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status": 0}});
+                    $.codeData[code].status = 0
                     let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
-                    let toEmail = null;
                     $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
                     emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
                     $.flagCode[code] = true;
@@ -195,7 +195,11 @@ module.exports.endEmail = function ($) {
                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{'currLone': $.codeData[code].currLone - 1}});
             } else {
                 console.log('if 3', code)
+                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
+                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
+                emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status": 0}});
+                $.codeData[code].status = 0
             }
         }
     }

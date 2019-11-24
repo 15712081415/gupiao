@@ -321,7 +321,7 @@ Array.prototype.min = function () {
         // let Dip = doubleNeedeDip(k__link);
         // score.numner += Dip.val;
         // consoles.log('doubleNeedeDip  ------>',code, score);
-        // score.numner += goUp(k__link);
+        score.numner += goUp(k__link);
         // score.numner += kdjUp(k__link);
 
         // score.numner += macdUp(k__link);
@@ -332,7 +332,7 @@ Array.prototype.min = function () {
         // consoles.log('bollCurr  ------>',code, score);
         // score.numner += volumeFun(k__link) * 10;
         // score.numner += WrFun(k__link);
-        score.numner += EneFun(k__link);
+        // score.numner += EneFun(k__link);
         // consoles.log('volumeFun  ------>',code, score);
         // score.numner += NeedeDip(k__link);
         // score.numner -= equilibrium(k__link, null);
@@ -534,13 +534,41 @@ Array.prototype.min = function () {
   // 追涨记分
   function goUp(k_link) {
     let nub = 0;
-    for (let i = 0, type = 0; i < k_link.length &&
-        k_link[i] &&
-        k_link[i+1] &&
-        k_link[i].MACD &&
-        k_link[i+1].MACD &&
-        k_link[i].MACD.EMA_BAR > k_link[i+1].MACD.EMA_BAR; i++) {
+    if (!k_link[0] || !k_link[1]) {
+        return 0;
+    }
+    if (k_link[0].volume > k_link[1].volume) {
         nub++
+    }
+    if (k_link[0].KDJ.J < k_link[1].KDJ.J) {
+        nub++
+    }
+    if (k_link[0].mean30 < k_link[1].mean30) {
+        nub++
+    }
+    if (k_link[0].mean20 < k_link[1].mean20) {
+        nub++
+    }
+    for(var i=0,f=0;k_link[i] && k_link[i+1] && !f;i++) {
+        if (k_link[0].mean10 < k_link[1].mean10) {
+            nub++
+        } else {
+            f++
+        }
+    }
+    for(var i=0,f=0;k_link[i] && k_link[i+1] && !f;i++) {
+        if (k_link[0].mean5 < k_link[1].mean5) {
+            nub++
+        } else {
+            f++
+        }
+    }
+    for(var i=0,f=0;k_link[i] && k_link[i+1] && !f;i++) {
+        if (k_link[0].js < k_link[1].js) {
+            nub++
+        } else {
+            f++
+        }
     }
     return nub;
   }
