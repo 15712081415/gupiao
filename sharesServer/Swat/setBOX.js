@@ -172,7 +172,7 @@ module.exports = function ($) {
         if (20 < k_link.length) {
             k_link[0].mean20 = k_link.slice(0, 20).sum('js');
         }
-        if (30 < k_link.length) {
+        if (28 < k_link.length) {
             k_link[0].mean30 = k_link.slice(0, 30).sum('js');
         }
         mean10 = mean10.sum();

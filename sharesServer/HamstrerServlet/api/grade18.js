@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 10; // 测试股票几率 ... 0为不测试
+  let testData = 0; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -306,7 +306,7 @@ Array.prototype.min = function () {
     if (20 < k_link.length) {
         k_link[0].mean20 = k_link.slice(0, 20).sum('js');
     }
-    if (30 < k_link.length) {
+    if (28 < k_link.length) {
         k_link[0].mean30 = k_link.slice(0, 30).sum('js');
     }
     consoles.log('开始scoreNumber计算分数');
@@ -555,6 +555,15 @@ Array.prototype.min = function () {
   function goBottom (k_link) {
     let n = 0;
     let num = 0;
+    if (!k_link[0] || !k_link[1] || k_link[0].MACD.EMA_BAR < k_link[1].MACD.EMA_BAR) {
+        return  0
+    }
+    if (k_link[0].volume > k_link[1].volume) {
+        return  0
+    }
+    if (k_link[0].mean30 < k_link[1].mean30) {
+        return  0
+    }
     for (var i = 0; i < 29 && k_link[i] && n < 2; i++) {
         if (n === 0) {
             if (!k_link[i] || !k_link[i+1] || k_link[i+1].js > k_link[i].js) {
@@ -572,12 +581,7 @@ Array.prototype.min = function () {
             }
         }
     }
-    if (k_link[0].volume > k_link[1].volume) {
-        return  0
-    }
-    if (k_link[0].MACD.EMA_BAR < k_link[1].MACD.EMA_BAR) {
-        return  0
-    }
+    
     num += 10 - (k_link[0].MACD.EMA_BAR > 0 ? k_link[0].MACD.EMA_BAR : k_link[0].MACD.EMA_BAR * -1);
     return num ? num : 0
   }

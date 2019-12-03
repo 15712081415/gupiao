@@ -65,29 +65,6 @@ module.exports = function (code, flag, $) {
         let currEnt = parseInt((temp4 - temp3) / temp3 * 10000) / 100;
         console.log(code + '检测行情', currEnt + '%', stop);
         $.openVal[code] = {v:temp3, s: currEnt};
-        // if (currEnt < -9) {
-        //     if (!$.flagCode[code]) {
-        //         $.flagCode[code] = true;
-        //         let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'%</p>';
-        //         $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
-        //         emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
-        //     }
-        //     return
-        // }
-        // if ($.codeData[code] && 
-        //     $.codeData[code]['K-Lin'] &&
-        //     $.codeData[code]['K-Lin'][0] &&
-        //     $.codeData[code]['K-Lin'][1] &&
-        //     $.codeData[code]['K-Lin'][0]['MACD']['EMA_BAR'] < $.codeData[code]['K-Lin'][1]['MACD']['EMA_BAR']) {
-        //     if (!$.flagCode[code]) {
-        //         $.flagCode[code] = true;
-        //         let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'% 暂停交易</p>';
-        //         $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
-        //         emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
-        //         $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status": 0}});
-        //     }
-        //     return
-        // }
         temp4 > 0 && flag && calculatingData(code, temp1);
     });
     function calculatingData(code, name) {
