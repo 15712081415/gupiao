@@ -116,7 +116,7 @@ Array.prototype.min = function () {
     bollCurr: 5, // 布林线趋势
     equilibrium: 100 // 均线分
   };
-  axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sz300545"} : {}).then(function(d) {
+  axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {"codeID":"sz000403"} : {}).then(function(d) {
     if (d.data) {
         fileArr = d.data.filter(item => {
             return (item.codeID[2] == 6 || item.codeID[2] == 3 || item.codeID[2] == 0) && item.codeID[0] == 's';
@@ -275,7 +275,7 @@ Array.prototype.min = function () {
         k_link = [o];
     }
     if (item['K-Lin']) {
-        for (let k = 0; k < item['K-Lin'].length && k < 20; k++) {
+        for (let k = 0; k < item['K-Lin'].length && k < 30; k++) {
             if (item['K-Lin'][k].js) {
                 k_link.push(item['K-Lin'][k]);
             }
@@ -297,15 +297,19 @@ Array.prototype.min = function () {
     }
     // 计算5，10均线
     console.log('均线');
+    consoles.log('mean5', k_link.length)
     if (5 < k_link.length) {
         k_link[0].mean5 = k_link.slice(0, 5).sum('js');
     }
+    consoles.log('mean10', k_link.length)
     if (10 < k_link.length) {
         k_link[0].mean10 = k_link.slice(0, 10).sum('js');
     }
+    consoles.log('mean20', k_link.length)
     if (20 < k_link.length) {
         k_link[0].mean20 = k_link.slice(0, 20).sum('js');
     }
+    consoles.log('mean30', k_link.length)
     if (28 < k_link.length) {
         k_link[0].mean30 = k_link.slice(0, 30).sum('js');
     }
@@ -561,6 +565,7 @@ Array.prototype.min = function () {
     if (k_link[0].volume > k_link[1].volume) {
         return  0
     }
+    consoles.log('k_link[0].mean30', k_link[0].mean30, k_link[1].mean30)
     if (k_link[0].mean30 < k_link[1].mean30) {
         return  0
     }
