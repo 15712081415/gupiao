@@ -4,6 +4,7 @@ MyList[stockName] = MyList[stockName] || mongoose.model(stockName, new Schema({
 	"status": Number,
 	"curr": Number,
 	"currLength": Number,
+	"currLone": Number,
 	"minData": [],
 	"maxData": [],
 	"name": String,

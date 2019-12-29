@@ -1,7 +1,10 @@
 ﻿let init = require('./init');
 let setTime = init.setTime;
 let longLine = require('./longLine');
+let longLine1 = require('./longLine1');
 let stup = require('./stup');
+let stup4 = require('./stup4');
+let stup5 = require('./stup5');
 let HKstup = require('./HKstup');
 let setBOX = require('./setBOX');
 let minuteK = require('./minuteK');
@@ -16,6 +19,9 @@ let $ = {
     codeIDarr1: [],
     codeIDarr2: [],
     codeIDarr3: [],
+    codeIDarr4: [],
+    codeIDarr5: [],
+    codeIDarr6: [],
     Sday: {},
     codeData: {},
     soaringMax: {},
@@ -35,11 +41,14 @@ let $ = {
     loading: loading,
 }
 // 初始化
-$.schedule.scheduleJob('0 55 8 * * 1-5', function () {
+$.schedule.scheduleJob('1 55 8 * * 1-5', function () {
     // 每日清空数据
     $.codeIDarr1 = []; // 长线
     $.codeIDarr2 = []; // 短线
     $.codeIDarr3 = []; // 港股
+    $.codeIDarr4 = []; // 只买
+    $.codeIDarr5 = []; // 只卖
+    $.codeIDarr6 = []; // 中短线
     $.Sday = {}; // 当天获取的价格
     $.codeData = {}; // 所有股票信息
     $.soaringMax = {}; // 邮件状态 0：飙升中   1：回降中
@@ -64,7 +73,7 @@ function loading() {
     $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/find').then(function (d) {
         serverData(d.data)
         console.log('stock/find');
-        let arr1 = [], arr2 = [], arr3 = [];
+        let arr1 = [], arr2 = [], arr3 = [], arr4 = [], arr5 = [], arr6 = [];
         for (let i = 0; i < d.data.length; i++) {
             let item = d.data[i];
             if (item.status > 0) {
@@ -75,7 +84,7 @@ function loading() {
                 $.minValue[item.codeID] = (Number(item.mean) - item.min) * 0.05;
                 $.maxCurr[item.codeID] = { nub: 0, arr: [] };
                 $.minCurr[item.codeID] = { nub: 0, arr: [] };
-                item.ztLength = item.currLength;
+                item.ztLength = item.currLength || 0;
                 $.codeData[item.codeID] = item;
                 $.deal[item.codeID] = { up: 0, dow: 0, status: true, info: null}
                 if (item.codeID.indexOf('hk') !== -1) {
@@ -83,12 +92,18 @@ function loading() {
                 } else {
                     item.status == 1 && arr1.push(item)
                     item.status == 2 && arr2.push(item)
+                    item.status == 4 && arr4.push(item)
+                    item.status == 5 && arr5.push(item)
+                    item.status == 6 && arr6.push(item)
                 }
             }
         }
         $.codeIDarr1 = arr1;
         $.codeIDarr2 = arr2;
         $.codeIDarr3 = arr3;
+        $.codeIDarr4 = arr4;
+        $.codeIDarr5 = arr5;
+        $.codeIDarr6 = arr6;
         gainCode();
     }).catch(function (err) {
         console.log(err);
@@ -100,7 +115,12 @@ ruleCurr.dayOfWeek = [1, 2, 3, 4, 5]; // 周
 ruleCurr.hour = [9, 10, 11, 12, 13, 14, 15]; // 时
 ruleCurr.second = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]; // 秒
 $.schedule.scheduleJob(ruleCurr, function () {
-    $.codeIDarr1.length > 0 || $.codeIDarr2.length > 0 || $.codeIDarr3.length > 0 ? gainCode() : loading();
+    $.codeIDarr1.length > 0 
+    || $.codeIDarr2.length > 0 
+    || $.codeIDarr3.length > 0
+    || $.codeIDarr4.length > 0
+    || $.codeIDarr5.length > 0 
+    || $.codeIDarr6.length > 0 ? gainCode() : loading();
 });
 
 function gainCode() {
@@ -109,18 +129,51 @@ function gainCode() {
     if (time.getHours() != 9 || time.getMinutes() > 30) {
         console.log('time ->', time.getMinutes(), time.getSeconds());
         time.getMinutes() % 5 == 0 && time.getSeconds() < 5 && minuteK($);
-        if (time.getHours() < 15) {
+        if (time.getHours() < 15 || true) {
             for (let i = 0; i < $.codeIDarr1.length; i++) {
                 let item = $.codeIDarr1[i];
                 console.log("longLine解析股票代码：", item.codeID)
                 longLine(item.codeID, !!item.max, $);
             }
-        }
-        if (time.getHours() < 15) {
+
             for (let i = 0; i < $.codeIDarr2.length; i++) {
                 let item = $.codeIDarr2[i];
                 console.log("stup解析股票代码：", item.codeID)
-                stup(item.codeID, !!item.max, $);
+                try {
+                    stup(item.codeID, !!item.max, $);
+                } catch (error) {
+                    console.error(error)
+                }
+            }
+
+            for (let i = 0; i < $.codeIDarr4.length; i++) {
+                let item = $.codeIDarr4[i];
+                console.log("stup4解析股票代码：", item.codeID)
+                try {
+                    stup4(item.codeID, !!item.max, $);
+                } catch (error) {
+                    console.error(error)
+                }
+            }
+
+            for (let i = 0; i < $.codeIDarr5.length; i++) {
+                let item = $.codeIDarr5[i];
+                console.log("stup5解析股票代码：", item.codeID)
+                try {
+                    stup5(item.codeID, !!item.max, $);
+                } catch (error) {
+                    console.error(error)
+                }
+            }
+
+            for (let i = 0; i < $.codeIDarr6.length; i++) {
+                let item = $.codeIDarr6[i];
+                console.log("longLine1解析股票代码：", item.codeID)
+                try {
+                    longLine1(item.codeID, !!item.max, $);
+                } catch (error) {
+                    console.error(error)
+                }
             }
         } 
         for (let i = 0; i < $.codeIDarr3.length; i++) {
@@ -132,28 +185,30 @@ function gainCode() {
 }
 
 //尾盘清理
-$.schedule.scheduleJob('1 55 14 * * 1-5', function () { // 5 55 14 * * 1-5
+// loading()
+$.schedule.scheduleJob('1 54 14 * * 1-5', function () { // 1 54 14 * * 1-5
     $.codeIDarr1.length && longLine.endEmail($);
     $.codeIDarr2.length && stup.endEmail($);
+    $.codeIDarr5.length && stup5.endEmail($);
+    $.codeIDarr6.length && longLine1.endEmail($);
     !$.codeIDarr1.length && !$.codeIDarr2.length && loading()
 });
 
 // 发送最新股票评分
-$.schedule.scheduleJob('10 55 14 * * 1-5', function () { // 5 56 14 * * 1-5
-    if (!$.codeIDarr1.length) return;
+$.schedule.scheduleJob('40 55 14 * * 1-5',  function () { // '10 55 14 * * 1-5'
     console.log('发送最新股票评分');
     $.status = false; // 停止统计,避免占用资源
-    let list = 2; // 买几只股
-    $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade12?type=' + list).then(function (res){
+    let status = 6; // 买什么类型
+    let currLone = 0; // 最长持有多少天
+    // let codeIDarr1 = $.codeIDarr1.filter(item => $.codeData[item.codeID].status > 0).length
+    // let codeIDarr6 = $.codeIDarr6.filter(item => $.codeData[item.codeID].status > 0).length
+    // let list = 2 - (codeIDarr1 + codeIDarr6); // 买几只股
+    let list = 2;
+    list > 0 && $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade18?type=' + list).then(function (res){
         if (res) {
             let arr = res.data;
-            let key = 0
-            for (let name in $.flagCode) {
-                if ($.flagCode[name] !== true)  key++;
-            }
-            arr.length = list - key;
             if (arr[2]) {
-                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[2].code},"setter":{"status":1}}).then(res=>{
+                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[2].code},"setter":{"status":status, 'currLone': currLone}}).then(res=>{
                     console.log(arr[2].code+'修改状态成功')
                 })
                 let numCode = arr[2].code.substring(2, 8);
@@ -162,7 +217,7 @@ $.schedule.scheduleJob('10 55 14 * * 1-5', function () { // 5 56 14 * * 1-5
                 emailGet(null, '[' + arr[2].code + ']:买叁', nubMon);
             }
             if (arr[1]) {
-                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[1].code},"setter":{"status":1}}).then(res=>{
+                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[1].code},"setter":{"status":status, 'currLone': currLone}}).then(res=>{
                     console.log(arr[1].code+'修改状态成功')
                 })
                 setTimeout(() => {
@@ -173,7 +228,7 @@ $.schedule.scheduleJob('10 55 14 * * 1-5', function () { // 5 56 14 * * 1-5
                 }, 4000);
             }
             if (arr[0]) {
-                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[0].code},"setter":{"status":1}}).then(res=>{
+                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[0].code},"setter":{"status":status, 'currLone': currLone}}).then(res=>{
                     console.log(arr[0].code+'修改状态成功')
                 })
                 setTimeout(() => {

@@ -64,16 +64,7 @@ module.exports = function (code, flag, $) {
         let stop = (parseInt((temp5 - temp3) / temp3 * 10000) / 100) || 0;
         let currEnt = parseInt((temp4 - temp3) / temp3 * 10000) / 100;
         console.log(code + '检测行情', currEnt + '%', stop);
-        if (!$.openVal[code]) $.openVal[code] = {v:temp3, s: currEnt};        
-        if (currEnt < -9) {
-            if (!$.flagCode[code]) {
-                $.flagCode[code] = true;
-                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'%</p>';
-                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
-                emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
-            }
-            return
-        }
+        $.openVal[code] = {v:temp3, s: currEnt};
         temp4 > 0 && flag && calculatingData(code, temp1);
     });
     function calculatingData(code, name) {
@@ -165,16 +156,27 @@ function statusFlag (k_lin) {
 }
 
 module.exports.endEmail = function ($) {
-    for (let item in $.codeIDarr1) {
-        let code = $.codeIDarr1[item].codeID;
-        if (code && !$.flagCode[code]) {
-            if (!$.openVal[code] || $.openVal[code].s < 9.9) {
-                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status": 0}});
+    for (let item in $.codeIDarr6) {
+        let code = $.codeIDarr6[item].codeID;
+        if (code) {
+            if (!$.openVal[code] || ($.openVal[code].s < 9.9 && $.openVal[code].s > 0)) {
+                    $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status": 0}});
+                    $.codeData[code].status = 0
+                    let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
+                    $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
+                    emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
+                    $.flagCode[code] = true;
+                    console.log('if 1', code)
+            } else if ($.codeData[code].currLone) {
+                console.log('if 2', code)
+                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{'currLone': $.codeData[code].currLone - 1}});
+            } else {
+                console.log('if 3', code)
                 let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
-                let toEmail = null;
                 $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
                 emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
-                $.flagCode[code] = true;
+                $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"status": 0}});
+                $.codeData[code].status = 0
             }
         }
     }

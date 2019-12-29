@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 0; // 测试股票几率 ... 0为不测试
+  let testData = 10; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -322,14 +322,14 @@ Array.prototype.min = function () {
         // score.numner += Dip.val;
         // consoles.log('doubleNeedeDip  ------>',code, score);
         // score.numner += goUp(k__link);
-        // score.numner += kdjUp(k__link);
+        score.numner += kdjUp(k__link);
         // score.numner += macdUp(k__link);
         // score.numner += macdNull(k__link);
         // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
         // score.numner += bollCurr(k__link);
         // consoles.log('scoreNumber bollCurr -->', score.numner);
         // consoles.log('bollCurr  ------>',code, score);
-        score.numner += volumeFun(k__link);
+        // score.numner += volumeFun(k__link);
         // consoles.log('volumeFun  ------>',code, score);
         // score.numner += NeedeDip(k__link);
         // score.numner -= equilibrium(k__link, null);
@@ -518,9 +518,9 @@ Array.prototype.min = function () {
     for (let i = 0, type = 0; i < k_link.length &&
         k_link[i] &&
         k_link[i+1] &&
-        k_link[i].volume &&
-        k_link[i+1].volume &&
-        k_link[i].volume > k_link[i+1].volume; i++) {
+        k_link[i].MACD &&
+        k_link[i+1].MACD &&
+        k_link[i].MACD.EMA_BAR > k_link[i+1].MACD.EMA_BAR; i++) {
         nub++
     }
     return nub;
@@ -579,21 +579,45 @@ Array.prototype.min = function () {
   }
   // kdj JKD
   function kdjUp (k_link) {
+    if (k_link[0] && k_link[0].status > 0) return 0;
     let nub = 0;
-    if (k_link[0] && k_link[1] && k_link[0].KDJ && k_link[1].KDJ && k_link[0].KDJ.J && k_link[1].KDJ.J) {
-        if (k_link[0].KDJ.K > 50 ||
-            k_link[0].KDJ.J < k_link[1].KDJ.J || 
-            k_link[0].status < 0) return 0;
+    // if (k_link[0] && k_link[1] && k_link[0].KDJ && k_link[1].KDJ && k_link[0].KDJ.J && k_link[1].KDJ.J) {
+    //     if (k_link[0].KDJ.K > 50 ||
+    //         k_link[0].KDJ.J < k_link[1].KDJ.J || 
+    //         k_link[0].status < 0) return 0;
         
-        nub += 100;
-        let sum = k_link[0].KDJ.J + k_link[0].KDJ.D + k_link[0].KDJ.K
-        let J = sum - k_link[0].KDJ.J
-        let D = sum - k_link[0].KDJ.D
-        let K = sum - k_link[0].KDJ.K
-        nub -= J < 0 ? J * -1 : J
-        nub -= D < 0 ? D * -1 : D
-        nub -= K < 0 ? K * -1 : K
+    //     nub += 100;
+    //     let sum = k_link[0].KDJ.J + k_link[0].KDJ.D + k_link[0].KDJ.K
+    //     let J = sum - k_link[0].KDJ.J
+    //     let D = sum - k_link[0].KDJ.D
+    //     let K = sum - k_link[0].KDJ.K
+    //     nub -= J < 0 ? J * -1 : J
+    //     nub -= D < 0 ? D * -1 : D
+    //     nub -= K < 0 ? K * -1 : K
+    // }
+    if (k_link) {
+        for(let i=0, flag=true;i<k_link.length && flag;i++) {
+            if (k_link[i] && k_link[i+1] && k_link[i+1].KDJ) {
+                if (k_link[i+1].KDJ.J > k_link[i].KDJ.J && k_link[i].KDJ.J < -3) {
+                    nub++
+                } else {
+                    flag = false
+                }
+            } else {
+                flag = false
+            }
+        }
+        for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
+            if (k_link[i] && k_link[i].volume) {
+                if (k_link[0].volume < k_link[i].volume) {
+                    nub++
+                } else {
+                    flag = false
+                }
+            }
+        }
     }
+
     return nub < 0 ? 0 : nub;
   }
   function NeedeDip (k_link) {

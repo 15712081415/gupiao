@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 10; // 测试股票几率 ... 0为不测试
+  let testData = 20; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -495,64 +495,20 @@ Array.prototype.min = function () {
   // 追涨记分
   function goUp(k_link) {
     let nub = 0;
-    let type = 0;
-    let min0 = 0;
-    let min1 = 0;
-    let [js,ks,max,min] = [[],[],[],[]];
-    k_link.forEach((item, i) => {
-        if (i < 5) {
-            js.push(item.js);
-            ks.push(item.ks);
-            max.push(item.max);
-            min.push(item.min);
+    if (
+        k_link[0]
+        && k_link[1] 
+        && k_link[2]
+        && k_link[0].mean5 > k_link[1].mean5
+        && k_link[1].mean5 < k_link[2].mean5
+    ) {
+        for (let i = 2; k_link[i] && k_link[i].mean5 && i < k_link.length && k_link[i-1].mean5 < k_link[i].mean5; i++) {
+            nub++
         }
-    });
-    if (k_link && k_link[0]&& k_link[1]) {
-        if (k_link[0].mean5 > k_link[0].mean10) return 0;
-        if (k_link[0].js / k_link[1].js > 1.08) return 0;
-        if (k_link[0].js > k_link[0].mean20) {
-            nub += 5;
+        if (k_link[0].volume && k_link[0+1].volume && k_link[0+1].volume > k_link[0].volume && k_link[0].status) {
+            let vol = k_link[0+1].volume / k_link[0].volume;
+            nub += (vol > 3 ? 3 : vol) * 10;
         }
-        if (k_link[0].mean20 - k_link[1].mean20 > 0) {
-            nub += 5;
-        } else {
-            return 0
-        }
-        if (k_link[0].mean30 && k_link[1].mean30 && k_link[0].mean30 - k_link[1].mean30 > 0) {
-            nub += 5;
-        }
-        if (k_link[0].MACD.EMA_DIF - k_link[1].MACD.EMA_DIF > 0) {
-            nub += 5;
-        }
-        if (k_link[0].MACD.EMA_DEA - k_link[1].MACD.EMA_DEA < 0) {
-            nub += 5;
-        }
-        if (k_link[0].max < k_link[1].max) {
-            nub += 5;
-        }
-        if (k_link[0].js > k_link[1].min) {
-            nub += 5;
-        }
-        if (k_link[0].status > 0 && k_link[0].mean5 > k_link[1].mean5) {
-            nub += 10;
-        }
-        if (k_link[0].min < k_link[1].min && k_link[0].min < k_link[2].min) {
-            nub += 10;
-        }
-        if (k_link[1].mean5 < k_link[1].mean10) {
-            nub += 10;
-            if (k_link[2].mean5 < k_link[2].mean10) {
-                nub += 10;
-            }
-        } else {
-            return 0
-        }
-        if (k_link[0] && k_link[1] && k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
-            if (k_link[0].MACD.EMA_BAR < k_link[1].MACD.EMA_BAR) {
-                return 0
-            }
-        }
-        nub -= ((k_link[0].mean5 + k_link[0].mean10) / 2 / k_link[0].mean5 - 1) * 1000
     }
     return nub;
   }
