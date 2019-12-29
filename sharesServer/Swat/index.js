@@ -195,7 +195,7 @@ $.schedule.scheduleJob('1 54 14 * * 1-5', function () { // 1 54 14 * * 1-5
 });
 
 // 发送最新股票评分
-$.schedule.scheduleJob('40 55 14 * * 1-5',  function () { // '10 55 14 * * 1-5'
+$.schedule.scheduleJob('30 56 14 * * 1-5',  function () { // '10 55 14 * * 1-5'
     console.log('发送最新股票评分');
     $.status = false; // 停止统计,避免占用资源
     let status = 6; // 买什么类型
@@ -244,7 +244,7 @@ $.schedule.scheduleJob('40 55 14 * * 1-5',  function () { // '10 55 14 * * 1-5'
 });
 
 // 执行任务收集信息
-// setBOX($);
+setBOX($);
 // minuteK($)
 $.schedule.scheduleJob('5 0 16 * * 1-5', function () {
     console.log('执行任务setBOX');

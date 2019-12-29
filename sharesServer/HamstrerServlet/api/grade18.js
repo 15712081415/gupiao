@@ -333,7 +333,9 @@ Array.prototype.min = function () {
 
         // score.numner += macdUp(k__link);
         // score.numner += macdNull(k__link);
-        score.numner += goBottom(k__link);
+        score.numner += jx(k__link);
+        
+        // score.numner += goBottom(k__link);
         // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
         // score.numner += bollCurr(k__link);
         // consoles.log('scoreNumber bollCurr -->', score.numner);
@@ -576,6 +578,9 @@ Array.prototype.min = function () {
             }
             n++
         } else {
+            // if (n === 1) {
+            //     if (!k_link[i] || !k_link[i+1] || k_link[i+1].js > k_link[i].js) return 0
+            // }
             if (k_link[i] && k_link[i+1] && k_link[i+1].js > k_link[i].js) {
                 if (k_link[0].volume < k_link[i+1].volume) {
                     num++
@@ -617,13 +622,14 @@ Array.prototype.min = function () {
   // MACD 0
   function macdNull (k_link) {
     if (!(k_link[0] && k_link[1] && k_link[0].status > 0)) return 0;
-    if (!k_link[0] && !k_link[2] && k_link[0].js > k_link[2].js) return 0
+    if (!k_link[0] && !k_link[2] && k_link[0].js > k_link[2].js) return 0;
+    // if (k_link[0].mean30 < k_link[1].mean30) return  0;
     let nub = 0;
-    let flage = false
-    for(var i = 0; i < 4 && k_link[i] && k_link[i + 1]; i++) {
-        if (parseInt((k_link[i].js - k_link[i + 1].js) / k_link[i + 1].js * 10000) / 100 < -5) flage = true
-    }
-    if (!flage) return 0;
+    // let flage = false
+    // for(var i = 0; i < 4 && k_link[i] && k_link[i + 1]; i++) {
+    //     if (parseInt((k_link[i].js - k_link[i + 1].js) / k_link[i + 1].js * 10000) / 100 < -5) flage = true
+    // }
+    // if (!flage) return 0;
     if (k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
         if (k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR && k_link[1].MACD.EMA_BAR < k_link[2].MACD.EMA_BAR) {
             nub += 1;
@@ -633,6 +639,23 @@ Array.prototype.min = function () {
         nub += -100 *  k_link[1].MACD.EMA_BAR
     }
     return nub < 1 ? 0 : nub;
+  }
+  function jx (k_link) {
+    if (!k_link[0] ||
+        !k_link[1] ||
+        !k_link[0].MACD ||
+        !k_link[1].MACD ||
+        // k_link[0].MACD.EMA_BAR < k_link[1].MACD.EMA_BAR ||
+        k_link[0].mean5 < k_link[1].mean5 ||
+        k_link[0].mean5 < k_link[0].mean10 ||
+        k_link[0].mean30 < k_link[1].mean30
+    ) return 0;
+    let max = k_link.slice(0,10).map(item => item.max)
+    if (max < k_link[0].js) return 0;
+    let nub = 0;
+    nub += 50 -  (k_link[0].MACD.EMA_BAR > 0 ? k_link[0].MACD.EMA_BAR * 10 : k_link[0].MACD.EMA_BAR * -10)
+    nub += 50 *  (k_link[0].mean5 > k_link[0].mean10 ? k_link[0].mean10 / k_link[0].mean5 : k_link[0].mean5 / k_link[0].mean10)
+    return nub < 0 ? 0 : nub
   }
 //   function macdNull (k_link) {
 //     if (!(k_link[1] && k_link[2] && k_link[1].status > 0)) return 0;
