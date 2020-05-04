@@ -7,8 +7,18 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}/sharesServer\\HamstrerServlet\\api\\grade18.js"
+            "name": "Electron Main",
+            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+            "program": "${workspaceFolder}/main.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "swat",
+            "program": "${workspaceFolder}/sharesServer/swat/index.js"
         },
         {
             "type": "node",

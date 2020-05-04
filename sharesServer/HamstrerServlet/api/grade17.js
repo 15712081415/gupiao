@@ -537,34 +537,20 @@ Array.prototype.min = function () {
     if (!k_link[0] || !k_link[1]) {
         return 0;
     }
-    if (k_link[0].volume > k_link[1].volume) {
-        nub++
-    }
-    if (k_link[0].KDJ.J < k_link[1].KDJ.J) {
-        nub++
-    }
     if (k_link[0].mean30 < k_link[1].mean30) {
-        nub++
+        return 0;
     }
-    if (k_link[0].mean20 < k_link[1].mean20) {
-        nub++
+    if (k_link[0].MACD.EMA_BAR < k_link[1].MACD.EMA_BAR) {
+        return 0;
     }
-    for(var i=0,f=0;k_link[i] && k_link[i+1] && !f;i++) {
-        if (k_link[0].mean10 < k_link[1].mean10) {
-            nub++
-        } else {
-            f++
-        }
+    if (k_link[0].KDJ.K < k_link[1].KDJ.K) {
+        return 0;
+    } else {
+        nub += 100 - k_link[0].KDJ.K
     }
-    for(var i=0,f=0;k_link[i] && k_link[i+1] && !f;i++) {
-        if (k_link[0].mean5 < k_link[1].mean5) {
-            nub++
-        } else {
-            f++
-        }
-    }
-    for(var i=0,f=0;k_link[i] && k_link[i+1] && !f;i++) {
-        if (k_link[0].js < k_link[1].js) {
+    
+    for(var i=1,f=0;k_link[i] && k_link[i+1] && !f;i++) {
+        if (k_link[i].KDJ.K < k_link[i+1].KDJ.K) {
             nub++
         } else {
             f++

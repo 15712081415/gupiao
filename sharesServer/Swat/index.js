@@ -70,8 +70,8 @@ function loading() {
     console.log('loading');
     $.Sday = {};
     $.timeRQ = setTime(); // 当天日期
-    $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/find').then(function (d) {
-        serverData(d.data)
+    $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', {status: {$gt: 0}}).then(function (d) {
+        // serverData(d.data)
         console.log('stock/find');
         let arr1 = [], arr2 = [], arr3 = [], arr4 = [], arr5 = [], arr6 = [];
         for (let i = 0; i < d.data.length; i++) {
@@ -124,9 +124,10 @@ $.schedule.scheduleJob(ruleCurr, function () {
 });
 
 function gainCode() {
+    console.log('gainCode ->')
     if (!$.status) return;
     let time = new Date();
-    if (time.getHours() != 9 || time.getMinutes() > 30) {
+    if (time.getHours() != 9 || time.getMinutes() >= 30) {
         console.log('time ->', time.getMinutes(), time.getSeconds());
         time.getMinutes() % 5 == 0 && time.getSeconds() < 5 && minuteK($);
         if (time.getHours() < 15 || true) {
@@ -195,7 +196,7 @@ $.schedule.scheduleJob('1 54 14 * * 1-5', function () { // 1 54 14 * * 1-5
 });
 
 // 发送最新股票评分
-$.schedule.scheduleJob('30 56 14 * * 1-5',  function () { // '10 55 14 * * 1-5'
+$.schedule.scheduleJob('45 55 14 * * 1-5',  function () { // '10 55 14 * * 1-5'
     console.log('发送最新股票评分');
     $.status = false; // 停止统计,避免占用资源
     let status = 6; // 买什么类型
@@ -203,8 +204,8 @@ $.schedule.scheduleJob('30 56 14 * * 1-5',  function () { // '10 55 14 * * 1-5'
     // let codeIDarr1 = $.codeIDarr1.filter(item => $.codeData[item.codeID].status > 0).length
     // let codeIDarr6 = $.codeIDarr6.filter(item => $.codeData[item.codeID].status > 0).length
     // let list = 2 - (codeIDarr1 + codeIDarr6); // 买几只股
-    let list = 2;
-    list > 0 && $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade18?type=' + list).then(function (res){
+    let list = 1;
+    list > 0 && $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade12?type=' + list).then(function (res){
         if (res) {
             let arr = res.data;
             if (arr[2]) {
@@ -225,7 +226,7 @@ $.schedule.scheduleJob('30 56 14 * * 1-5',  function () { // '10 55 14 * * 1-5'
                     $.io.sockets.emit('news',{content: '代码：' + numCode, title: '买贰'});
                     let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';
                     emailGet(null, '[' + arr[1].code + ']:买贰', nubMon);
-                }, 4000);
+                }, 2000);
             }
             if (arr[0]) {
                 $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":arr[0].code},"setter":{"status":status, 'currLone': currLone}}).then(res=>{
@@ -236,7 +237,7 @@ $.schedule.scheduleJob('30 56 14 * * 1-5',  function () { // '10 55 14 * * 1-5'
                     $.io.sockets.emit('news',{content: '代码：' + numCode, title: '全仓'});
                     let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + numCode + '</span>';
                     emailGet(null, '[' + arr[0].code + ']:全仓', nubMon);
-                }, 8000);
+                }, 4000);
             }
         }
         $.status = true; // 恢复统计
@@ -244,7 +245,7 @@ $.schedule.scheduleJob('30 56 14 * * 1-5',  function () { // '10 55 14 * * 1-5'
 });
 
 // 执行任务收集信息
-setBOX($);
+// setBOX($);
 // minuteK($)
 $.schedule.scheduleJob('5 0 16 * * 1-5', function () {
     console.log('执行任务setBOX');

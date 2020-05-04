@@ -78,7 +78,8 @@ module.exports = {
     let io = sio.listen(server);
     io.on('connection',function(socket){
         socket.on('String',function(data){
-            
+            console.log('socket ->')
+            io.sockets.emit('news',{content: '代码：sz300059', title: '买叁'});
         });
     });
     console.log('4000')

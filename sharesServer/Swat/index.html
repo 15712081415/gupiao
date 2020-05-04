@@ -150,15 +150,15 @@
 				console.log(data);
 				var dom = $('#myOl');
 				var length = $('#myOl li').length + 1;
-				dom.prepend('<li><a href="#" data-index="'+ length +'" onclick="clickFun(this, \''+ data.content +'\')"><b>'+ data.title +'</b></a></li>')
+				dom.prepend('<li><a href="#" data-index="'+ length +'" onclick="clickFun(this, \''+ data.content +'\', '+ data.nub +')"><b>'+ data.title +'</b></a></li>')
 				socket.send('消息已接收到');
 		});
 		socket.emit('connectiion', {}, function (res) {
 			console.log(res);
 		});
-		function clickFun(dom, str) {
+		function clickFun(dom, str, nub) {
 			dom.className="end";
-			$('#content').html(str);
+			$('#content').html(str + '__' + nub);
 			var Url2 = document.getElementById("biao1");
 			Url2.value = str.substring(3, str.length);
 			copyUrl2()

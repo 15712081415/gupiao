@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 0; // 测试股票几率 ... 0为不测试
+  let testData = 10; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -328,12 +328,12 @@ Array.prototype.min = function () {
         // let Dip = doubleNeedeDip(k__link);
         // score.numner += Dip.val;
         // consoles.log('doubleNeedeDip  ------>',code, score);
-        // score.numner += goUp(k__link);
+        score.numner += goUp(k__link);
         // score.numner += kdjUp(k__link);
 
         // score.numner += macdUp(k__link);
         // score.numner += macdNull(k__link);
-        score.numner += jx(k__link);
+        // score.numner += jx(k__link);
         
         // score.numner += goBottom(k__link);
         // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
@@ -416,14 +416,20 @@ Array.prototype.min = function () {
   }
   // 价格区间记分
   function bollCurr(k_link) {
-    consoles.log('bollCurr ---->', k_link[0].boll);
-    if ((k_link[0].boll.MB + k_link[0].boll.DN) / 2 < k_link[0].js) return 0;
-    let nub = k_link.length ? (k_link[0].boll.UP / k_link[0].js * config.bollCurr) || 0 : 0;
-    if (k_link[0] && k_link[1] && k_link[0].js > k_link[1].max) {
-        nub += (k_link[0].js / k_link[1].max * config.bollCurr * 0.5) || 0;
-    }
-    consoles.log('bollCurr ---->', nub);
-    return nub;
+    // consoles.log('bollCurr ---->', k_link[0].boll);
+    // if ((k_link[0].boll.MB + k_link[0].boll.DN) / 2 < k_link[0].js) return 0;
+    // let nub = k_link.length ? (k_link[0].boll.UP / k_link[0].js * config.bollCurr) || 0 : 0;
+    // if (k_link[0] && k_link[1] && k_link[0].min > k_link[1].min) {
+    //     nub += (k_link[0].min / k_link[1].min * config.bollCurr * 0.5) || 0;
+    // }
+    if (
+        k_link[0].mean30 < k_link[1].mean30 ||
+        // k_link[0].volume < k_link[1].volume ||
+        // !(k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR && k_link[1].MACD.EMA_BAR < k_link[2].MACD.EMA_BAR) ||
+        k_link[0].js > k_link[0].boll.DN
+    ) return 0;
+    let nub = k_link.length ? (k_link[0].boll.UP / k_link[0].js * 10) || 0 : 0;
+    return nub ? nub : 0;
   }
   // 量比记分
   function volumeFun(k_link) {
@@ -546,17 +552,29 @@ Array.prototype.min = function () {
   // 追涨记分
   function goUp(k_link) {
     let nub = 0;
-    if (!(k_link[0] && k_link[1] && k_link[0].WR)) return 0
-    if (k_link[0].mean30 < k_link[1].mean30 
-        || k_link[0].mean20 < k_link[1].mean20
-        || k_link[0].max < k_link[1].max
-        || k_link[0].min < k_link[1].min
-        || k_link[0].status < 0
-    ) {
-        return 0
+    if (!(k_link[0] && k_link[1]
+        // &&  k_link[0].mean30 > k_link[1].mean30
+        // && k_link[0].js < k_link[0].boll.DN
+    )) return 0;
+    // k_link[0].mean20 > k_link[1].mean20 && (nub++)
+    // k_link[0].mean10 > k_link[1].mean10 && (nub++)
+    // k_link[0].mean5 > k_link[1].mean5 && (nub++)
+    // k_link[0].mean5 > k_link[1].mean10 && (nub++)
+    // k_link[0].mean10 > k_link[1].mean20 && (nub++)
+    // k_link[0].mean20 > k_link[1].mean30 && (nub++)
+    // k_link[0].KDJ.J > k_link[1].KDJ.J && (nub++)
+    // k_link[0].volume > k_link[1].volume && (nub++)
+    // k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR && (nub++)
+    for (let i = 0; i < k_link.length &&
+        k_link[i] &&
+        k_link[i+1] &&
+        k_link[i].volume &&
+        k_link[i+1].volume &&
+        k_link[i].volume > k_link[i+1].volume; i++) {
+        nub +=10
     }
-
-    return k_link[0].WR.WR6;
+    nub  += k_link[0].boll.UP / k_link[0].js * 10
+    return nub;
   }
   function goBottom (k_link) {
     let n = 0;
@@ -621,14 +639,34 @@ Array.prototype.min = function () {
   }
   // MACD 0
   function macdNull (k_link) {
-    if (!(k_link[0] && k_link[1] && k_link[0].status > 0)) return 0;
+    if (!(k_link[0] && k_link[1] && k_link[0].status < 0)) return 0;
     if (!k_link[0] && !k_link[2] && k_link[0].js > k_link[2].js) return 0;
     // if (k_link[0].mean30 < k_link[1].mean30) return  0;
     let nub = 0;
     // let flage = false
-    // for(var i = 0; i < 4 && k_link[i] && k_link[i + 1]; i++) {
-    //     if (parseInt((k_link[i].js - k_link[i + 1].js) / k_link[i + 1].js * 10000) / 100 < -5) flage = true
-    // }
+    for(var i = 0; i < 3 && k_link[i] && k_link[i + 1]; i++) {
+        if (parseInt((k_link[i].js - k_link[i + 1].js) / k_link[i + 1].js * 10000) / 100 < -2) nub += 3
+    }
+    // if (!flage) return 0;
+    if (k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
+        if (k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR && k_link[1].MACD.EMA_BAR < k_link[2].MACD.EMA_BAR) {
+            nub += 1;
+        } else {
+            return 0
+        }
+        nub += -100 *  k_link[1].MACD.EMA_BAR
+    }
+    return nub < 1 ? 0 : nub;
+  }
+
+  function macdNull1 (k_link) {
+    if (!(k_link[0] && k_link[1] && k_link[0].status < 0)) return 0;
+    if (k_link[0].mean30 < k_link[1].mean30) return  0;
+    let nub = 0;
+    // let flage = false
+    for(var i = 0; i < 3 && k_link[i] && k_link[i + 1]; i++) {
+        if (parseInt((k_link[i].js - k_link[i + 1].js) / k_link[i + 1].js * 10000) / 100 < -2) nub += 3
+    }
     // if (!flage) return 0;
     if (k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
         if (k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR && k_link[1].MACD.EMA_BAR < k_link[2].MACD.EMA_BAR) {
