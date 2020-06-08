@@ -38,6 +38,11 @@ module.exports = function (code, flag, $) {
             return
         }
         let nub = temp4;
+
+        // 随机数
+        // let nubs = nub - nub * 0.9
+        // nub = nub - nubs + (nubs * Math.random() * 2)
+
         if ($.Sday[code]) {
           $.Sday[code].push(nub);
         } else {
@@ -48,12 +53,12 @@ module.exports = function (code, flag, $) {
         let str = {
             'name': name,
             'daima': code,
-            'dangqianjiage': temp4,
+            'dangqianjiage': nub,
             'timeRQ': temp7,
             'timeSJ': temp8
         };
 
-        if (temp4 > 0 && !$.timeSJ[code + temp7 + temp8]) {
+        if (nub > 0 && !$.timeSJ[code + temp7 + temp8]) {
           $.timeSJ[code + temp7 + temp8] = true
           $.https.post('http://127.0.0.1:9999/HamstrerServlet/stockAll/add', str).then(function (message) {
             //   console.log(code + ':存储最新价格' + nub.toFixed(2) + '!');
@@ -62,7 +67,7 @@ module.exports = function (code, flag, $) {
           });
         }
         let stop = (parseInt((temp5 - temp3) / temp3 * 10000) / 100) || 0;
-        let currEnt = parseInt((temp4 - temp3) / temp3 * 10000) / 100;
+        let currEnt = parseInt((nub - temp3) / temp3 * 10000) / 100;
         console.log(code + '检测行情', currEnt + '%', stop);
         if (!$.openVal[code]) $.openVal[code] = {v:temp3, s: currEnt};        
         if (currEnt < -9) {
@@ -74,7 +79,7 @@ module.exports = function (code, flag, $) {
             }
             return
         }
-        temp4 > 0 && flag && calculatingData(code, temp1);
+        nub > 0 && flag && calculatingData(code, temp1);
     });
     function calculatingData(code, name) {
       if ($.Sday[code].length > 0) {

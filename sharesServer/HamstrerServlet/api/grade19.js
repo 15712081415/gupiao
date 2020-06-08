@@ -92,7 +92,7 @@ Array.prototype.min = function () {
   }
   // -------------------------------------------------------------------------------------------
   let test = 0; // 是否展示测试console
-  let testData = 20; // 测试股票几率 ... 0为不测试
+  let testData = 0; // 测试股票几率 ... 0为不测试
   let testCurr = 1; // 测试股票当前索引
   let statusUp = {
       UP: [],
@@ -321,15 +321,15 @@ Array.prototype.min = function () {
         // let Dip = doubleNeedeDip(k__link);
         // score.numner += Dip.val;
         // consoles.log('doubleNeedeDip  ------>',code, score);
-        score.numner += goUp(k__link);
         // score.numner += kdjUp(k__link);
         // score.numner += macdUp(k__link);
         // score.numner += macdNull(k__link);
         // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
-        // score.numner += bollCurr(k__link);
+        score.numner += bollCurr(k__link);
         // consoles.log('scoreNumber bollCurr -->', score.numner);
         // consoles.log('bollCurr  ------>',code, score);
-        score.numner += volumeFun(k__link);
+        score.numner && (score.numner += goUp(k__link));
+        score.numner && (score.numner += volumeFun(k__link));
         // consoles.log('volumeFun  ------>',code, score);
         // score.numner += NeedeDip(k__link);
         // score.numner -= equilibrium(k__link, null);
@@ -404,13 +404,9 @@ Array.prototype.min = function () {
   // 价格区间记分
   function bollCurr(k_link) {
     consoles.log('bollCurr ---->', k_link[0].boll);
-    if ((k_link[0].boll.MB + k_link[0].boll.DN) / 2 < k_link[0].js) return 0;
-    let nub = k_link.length ? (k_link[0].boll.UP / k_link[0].js * config.bollCurr) || 0 : 0;
-    if (k_link[0] && k_link[1] && k_link[0].js > k_link[1].max) {
-        nub += (k_link[0].js / k_link[1].max * config.bollCurr * 0.5) || 0;
-    }
-    consoles.log('bollCurr ---->', nub);
-    return nub;
+    if (k_link[0] && k_link[1] && k_link[0].js < k_link[1].js) return 0;
+    if ((k_link[0].boll.MB + 2 * k_link[0].boll.DN) / 3 > k_link[0].js) return 1;
+    return 0;
   }
   // 量比记分
   function volumeFun(k_link, type) {
@@ -419,15 +415,15 @@ Array.prototype.min = function () {
     let numner = 0;
     let vol = k_link[0].volume;
     let min = k_link[0].min;
-    for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
-        if (k_link[i] && k_link[i].volume) {
-            if (vol < k_link[i].volume) {
-                numner++
-            } else {
-                flag = false
-            }
-        }
-    }
+    // for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
+    //     if (k_link[i] && k_link[i].volume) {
+    //         if (vol < k_link[i].volume) {
+    //             numner++
+    //         } else {
+    //             flag = false
+    //         }
+    //     }
+    // }
     // for (let i = 1, flag = true; flag && i<k_link.length && i <= 30; i++) {
     //     if (k_link[i] && k_link[i].min) {
     //         if (min < k_link[i].min) {
@@ -437,15 +433,20 @@ Array.prototype.min = function () {
     //         }
     //     }
     // }
-    for (let i = 1, flag = true; flag && i < k_link.length && i <= 30; i++) {
-        if (k_link[i] && k_link[i].ks - k_link[i].js > 0) {
-            numner = numner + 2
-        } else {
-            flag = false
+    for (let i = 0, flag = 0; flag && i < k_link.length && i <= 30; i++) {
+        if (flag === 0 && i < 3) {
+            if (k_link[i] && k_link[i].ks - k_link[i].js <= 0) {
+                numner = numner + 3
+            } else {
+                flag++
+            }
+        } else if (flag === 1) {
+            if (k_link[i] && k_link[i].ks - k_link[i].js > 0) {
+                numner = numner + 1
+            } else {
+                flag++
+            }
         }
-    }
-    if (k_link[0].status > 0) {
-        numner = numner + 10
     }
     return numner;
 

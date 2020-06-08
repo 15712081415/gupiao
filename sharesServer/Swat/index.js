@@ -187,7 +187,7 @@ function gainCode() {
 
 //尾盘清理
 // loading()
-$.schedule.scheduleJob('1 54 14 * * 1-5', function () { // 1 54 14 * * 1-5
+$.schedule.scheduleJob('1 53 14 * * 1-5', function () { // 1 54 14 * * 1-5
     $.codeIDarr1.length && longLine.endEmail($);
     $.codeIDarr2.length && stup.endEmail($);
     $.codeIDarr5.length && stup5.endEmail($);
@@ -196,16 +196,16 @@ $.schedule.scheduleJob('1 54 14 * * 1-5', function () { // 1 54 14 * * 1-5
 });
 
 // 发送最新股票评分
-$.schedule.scheduleJob('45 55 14 * * 1-5',  function () { // '10 55 14 * * 1-5'
+$.schedule.scheduleJob('45 54 14 * * 1-5',  function () { // '45 55 14 * * 1-5'
     console.log('发送最新股票评分');
     $.status = false; // 停止统计,避免占用资源
-    let status = 6; // 买什么类型
+    let status = 1; // 买什么类型
     let currLone = 0; // 最长持有多少天
     // let codeIDarr1 = $.codeIDarr1.filter(item => $.codeData[item.codeID].status > 0).length
     // let codeIDarr6 = $.codeIDarr6.filter(item => $.codeData[item.codeID].status > 0).length
     // let list = 2 - (codeIDarr1 + codeIDarr6); // 买几只股
     let list = 1;
-    list > 0 && $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade12?type=' + list).then(function (res){
+    list > 0 && $.https.get('http://127.0.0.1:9999/HamstrerServlet/api/grade22?type=' + list).then(function (res){
         if (res) {
             let arr = res.data;
             if (arr[2]) {
