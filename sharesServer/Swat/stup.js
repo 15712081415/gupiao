@@ -1,16 +1,6 @@
 let email = require('../getemail');
-let buy = ['买肆','买叁','买贰','全仓']; // '买伍',
-let sell = ['清仓','清贰','清叁','清肆']; // ,'清伍'
-let currLengthKey = {
-    '买肆': 1,
-    '买叁': 2,
-    '买贰': 3,
-    '全仓': 4,
-    '清仓': 0,
-    '清贰': 1,
-    '清叁': 2,
-    '清肆': 3
-}
+let buy = ['买肆','买叁','买贰','全仓','清仓']; // '买伍',
+let sell = ['买贰','清仓','清贰','清叁','清肆']; // ,'清伍'
 module.exports = function (code, flag, $) {
   console.log('stup', code, flag);
   $.https.get('http://hq.sinajs.cn/list=' + (code.indexOf('hk') === -1 ? code : 'rt_' + code)).then(res => {
@@ -50,8 +40,8 @@ module.exports = function (code, flag, $) {
         let nub = Number(temp4);
 
         // 随机数
-        // let nubs = nub - nub * 0.9
-        // nub = nub - nubs + (nubs * Math.random() * 2)
+        let nubs = nub - nub * 0.9
+        nub = (nub * 0.9) + (nubs * Math.random() * 2)
 
         if ($.Sday[code]) {
           $.Sday[code].push(nub);
@@ -108,31 +98,30 @@ module.exports = function (code, flag, $) {
           let currDay = Number($.Sday[code][0]);
           let item = $.codeData[code];
           !item.currLength && (item.currLength = 0);
-          let maxSum = (item.curr || $.openVal[code].v) * 1.03;
-          let minSum = (item.curr || $.openVal[code].v) * 0.97;
+          let maxSum = (currDay || $.openVal[code].v) * 1.03;
+          let minSum = (currDay || $.openVal[code].v) * 0.97;
           let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
           let toEmail = null;
-          console.log(code + ':分析价格!', newest,max.max, maxSum + '<' + (max.max * 0.996), min.min,minSum + '>' + (min.min * 1.004))
+          console.log(code + ':分析价格!', newest, '仓位：', $.codeData[code].currLength)
           console.log('maxSum:', maxSum, 'minSum:', minSum);
           if (newest > maxSum || $.soaringMax[code]) {
               if ($.soaringMax[code] == 0) {
-                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '今日飙升中', nub: item.curr});  
-                  emailGet(toEmail, $.codeData[code].name + '[' + code + ']:今日飙升中', '当前价：' + $.Sday[code][lengths].toFixed(2) + '当日平均值：' + mean.toFixed(2) + ';当日最高：' + max.max.toFixed(2) + ';上行：' + maxSum.toFixed(2) + ';上压：' + $.maxCurr[code].nub);
                   $.soaringMax[code] = 1;
+                  $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '今日飙升中', nub: item.curr});  
+                //   emailGet(toEmail, $.codeData[code].name + '[' + code + ']:今日飙升中', '当前价：' + $.Sday[code][lengths].toFixed(2) + '当日平均值：' + mean.toFixed(2) + ';当日最高：' + max.max.toFixed(2) + ';上行：' + maxSum.toFixed(2) + ';上压：' + $.maxCurr[code].nub);
                   $.minCurr[code].nub = 0;
               } else if ($.soaringMax[code] == 1 && newest < max.max * 0.992) {
-                  $.soaringMax[code] = 0;
                   $.codeData[code].curr = $.Sday[code][lengths].toFixed(2);
                   $.Sday[code] = [$.codeData[code].curr];
-                  emailGet(toEmail, $.codeData[code].name + '[' + code + ']:' + sell[item.ztLength], '当前价：' + $.Sday[code][0]);
+                  $.soaringMax[code] = 0;
                   $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('-', item, code)}});
               }
           } else if (newest < minSum || $.soaringMin[code]) {
               if ($.soaringMin[code] == 0) {
-                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '今日下降中', nub: item.curr});
-                  let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
-                  emailGet(toEmail, $.codeData[code].name + '[' + code + ']:今日下降中', '当前价：' + $.Sday[code][$.Sday[code].length - 1].toFixed(2) + nubMon);
                   $.soaringMin[code] = 1;
+                  $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '今日下降中', nub: item.curr});
+                  let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
+                //   emailGet(toEmail, $.codeData[code].name + '[' + code + ']:今日下降中', '当前价：' + $.Sday[code][$.Sday[code].length - 1].toFixed(2) + nubMon);
                   $.maxCurr[code].nub = 0
               } else if ($.soaringMin[code] == 1 && newest > min.min * 1.008) {
                   $.soaringMin[code] = 0;
@@ -146,27 +135,37 @@ module.exports = function (code, flag, $) {
     }
     function currLength(type, item, code) {
         if (type == '-') {
-            if (item.ztLength > 0) {
-                let nub = item.currLength - 1
-                item.currLength = nub
-                item.ztLength = item.ztLength - 1
-                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[item.ztLength], nub: item.curr});              
+            if ($.codeData[code].ztLength > 0) {
+                let nub = $.codeData[code].currLength - 1
+                $.codeData[code].currLength = nub
+                $.codeData[code].ztLength = $.codeData[code].ztLength - 1
+                console.log('currLength ->', $.codeData[code].currLength)
+                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[$.codeData[code].ztLength], nub: $.codeData[code].curr});              
             } else {
                 console.log('无可卖')
+                $.flagCode[code] = true
+                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[$.codeData[code].ztLength], nub: $.codeData[code].curr}); 
+                return 2
             }
-            return item.currLength
+            return $.codeData[code].currLength
         } else {
-            if (item.currLength < buy.length) {
-                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[item.currLength], nub: item.curr});
-                let nub = item.currLength + 1
+            if ($.codeData[code].currLength < buy.length) {
+                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[$.codeData[code].currLength], nub: $.codeData[code].curr});
+                emailGet(null, $.codeData[code].name + '[' + code + ']:' + buy[$.codeData[code].currLength], '当前价：' + $.Sday[code][0]);
+                let nub = $.codeData[code].currLength + 1
                 if (nub < buy.length) {
-                    item.currLength = nub
+                    $.codeData[code].currLength = nub
                 }
+                console.log('currLength ->', $.codeData[code].currLength)
             } else {
                 console.log('无可买')
+                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[$.codeData[code].currLength], nub: $.codeData[code].curr});
+                $.flagCode[code] = true
+                return $.codeData[code].currLength - $.codeData[code].ztLength
             }
-            return item.currLength
+            return $.codeData[code].currLength
         }
+
     }
 }
 
@@ -203,20 +202,6 @@ module.exports.endEmail = function ($) { // 尾盘结束监听
                 $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[item.currLength]});
                 item.currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": currLength('-', item)}});
             }
-        }
-    }
-    function currLength(type, item, name) {
-        if (type == '+') {
-            let nub = buy.indexOf(name) + 1
-            return nub
-        } else {
-            let nub = item.currLength - 1
-            if (nub >= 0) {
-                item.currLength = nub
-            } else {
-                item.currLength = buy.length - 1
-            }
-            return nub
         }
     }
 }

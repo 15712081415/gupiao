@@ -5,6 +5,7 @@ let longLine1 = require('./longLine1');
 let stup = require('./stup');
 let stup4 = require('./stup4');
 let stup5 = require('./stup5');
+let stup6 = require('./stup6');
 let HKstup = require('./HKstup');
 let setBOX = require('./setBOX');
 let minuteK = require('./minuteK');
@@ -169,13 +170,23 @@ function gainCode() {
 
             for (let i = 0; i < $.codeIDarr6.length; i++) {
                 let item = $.codeIDarr6[i];
-                console.log("longLine1解析股票代码：", item.codeID)
+                console.log("stup6解析股票代码：", item.codeID)
                 try {
-                    longLine1(item.codeID, !!item.max, $);
+                    stup6(item.codeID, !!item.max, $);
                 } catch (error) {
                     console.error(error)
                 }
             }
+
+            // for (let i = 0; i < $.codeIDarr6.length; i++) {
+            //     let item = $.codeIDarr6[i];
+            //     console.log("longLine1解析股票代码：", item.codeID)
+            //     try {
+            //         longLine1(item.codeID, !!item.max, $);
+            //     } catch (error) {
+            //         console.error(error)
+            //     }
+            // }
         } 
         for (let i = 0; i < $.codeIDarr3.length; i++) {
             let item = $.codeIDarr3[i];
@@ -191,12 +202,11 @@ $.schedule.scheduleJob('1 53 14 * * 1-5', function () { // 1 54 14 * * 1-5
     $.codeIDarr1.length && longLine.endEmail($);
     $.codeIDarr2.length && stup.endEmail($);
     $.codeIDarr5.length && stup5.endEmail($);
-    $.codeIDarr6.length && longLine1.endEmail($);
-    !$.codeIDarr1.length && !$.codeIDarr2.length && loading()
+    $.codeIDarr6.length && stup6.endEmail($);
 });
 
 // 发送最新股票评分
-$.schedule.scheduleJob('45 54 14 * * 1-5',  function () { // '45 55 14 * * 1-5'
+$.schedule.scheduleJob('45 54 14 * * 1-5',  function () { // 45 54 14 * * 1-5
     console.log('发送最新股票评分');
     $.status = false; // 停止统计,避免占用资源
     let status = 1; // 买什么类型
@@ -245,7 +255,7 @@ $.schedule.scheduleJob('45 54 14 * * 1-5',  function () { // '45 55 14 * * 1-5'
 });
 
 // 执行任务收集信息
-// setBOX($);
+setBOX($);
 // minuteK($)
 $.schedule.scheduleJob('5 0 16 * * 1-5', function () {
     console.log('执行任务setBOX');

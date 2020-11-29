@@ -119,7 +119,7 @@ Array.prototype.min = function () {
   axios.post('http://127.0.0.1:9999/HamstrerServlet/stock/find', test ? {} : {}).then(function(d) {
     if (d.data) {
         fileArr = d.data.filter(item => {
-            return (/^s[z|h](600|601|603|605|000|002|300)/.test(item.codeID));
+            return (/^s[z|h](600|601|603|605|000|002|300)/.test(item.codeID)) && item.codeID[0] == 's';
         })
     }
     if (testData) res.send();
@@ -273,7 +273,7 @@ Array.prototype.min = function () {
     console.log('boll');
     o.boll = boll(item['K-Lin'], o);
     let k_link = []
-    if (k_link[0] && o['timeRQ'] == k_link[0]['timeRQ']) {
+    if (timeRQ == item['K-Lin'][0]['timeRQ']) {
         k_link = [].concat(item['K-Lin']);
         k_link[0] = o
     } else {
@@ -296,7 +296,7 @@ Array.prototype.min = function () {
         }
     }
     // 计算5，10均线
-    console.log('均线');
+    console.log('均线', k_link.length);
     if (5 < k_link.length) {
         k_link[0].mean5 = k_link.slice(0, 5).sum('js');
     }
@@ -309,7 +309,7 @@ Array.prototype.min = function () {
     if (30 < k_link.length) {
         k_link[0].mean30 = k_link.slice(0, 30).sum('js');
     }
-    consoles.log('开始scoreNumber计算分数');
+    console.log('开始scoreNumber计算分数');
     scoreNumber(k_link, item.codeID);
     console.log('getHtml + 1');
   }
@@ -326,17 +326,16 @@ Array.prototype.min = function () {
         // let Dip = doubleNeedeDip(k__link);
         // score.numner += Dip.val;
         // consoles.log('doubleNeedeDip  ------>',code, score);
-        // score.numner += kdjUp(k__link);
+        // score.numner += bollCurr(k__link);
         // score.numner += macdUp(k__link);
-        // score.numner += macdNull(k__link);
+        score.numner += macdNull(k__link);
         // score.numner > 0 && (score.numner += bollCurr(k__link) > 15 ? 15 : bollCurr(k__link));
-        score.numner += bollCurr(k__link);
         // consoles.log('scoreNumber bollCurr -->', score.numner);
         // consoles.log('bollCurr  ------>',code, score);
-        score.numner && (score.numner += macdNull(k__link));
-        score.numner && (score.numner += volumeFun(k__link));
-        // consoles.log('volumeFun  ------>',code, score);
         // score.numner += NeedeDip(k__link);
+        // score.numner += macdNull(k__link)
+        // score.numner && (score.numner += volumeFun(k__link));
+        // consoles.log('volumeFun  ------>',code, score);
         // score.numner -= equilibrium(k__link, null);
         // consoles.log('equilibrium  ------>',code, score);
         let name = parseInt(score.numner);
@@ -413,59 +412,29 @@ Array.prototype.min = function () {
     if (!k_link[0] || !k_link[1]) {
         return 0
     }
-    if (k_link[0].js < k_link[1].js) {
+    if (k_link[0].mean30 < k_link[1].mean30) {
         consoles.log('------1')
         return 0
     }
-    if (k_link[0].MACD.EMA_BAR < k_link[1].MACD.EMA_BAR) {
-        consoles.log('------2')
+    if (k_link[0].ks > k_link[0].js) {
+        consoles.log('------1')
         return 0
     }
-    if (!(
-        k_link[0] 
-        && k_link[1] 
-        && k_link[2] 
-        && k_link[0].mean5 > k_link[1].mean5
-        && k_link[1].mean5 < k_link[2].mean5
-    )) {
-        consoles.log('------3')
-        nub += -5;
+    if (k_link[0].volume > k_link[1].volume) {
+        consoles.log('------1')
+        return 0
     }
-    let flag = false
-    for (let i = 0, js = k_link[0].max;i < 8;i++) {
-        if (k_link[i] && k_link[i+1]) {
-            // let s = parseInt((k_link[i].js - k_link[i+1].js) / k_link[i+1].js * 10000) / 100
-            let s = bfb(k_link[i].js, k_link[i+1].js)
-            if (s > 9 || s < -9) {
-                consoles.log('------4')
-                return 0
-            }
-        }
-        if (i < 5 && i > 0 && k_link[i] && k_link[i].max > k_link[0].max) {
-            flag = true
-        }
-        if (i < 5 && k_link[i] && k_link[i+1] && (k_link[i].js - k_link[i + 1].js) / k_link[i].js > 0.09) {
-            return 0
-        }
+    if (k_link[0].boll.DN > k_link[0].min) {
+        nub = parseInt(k_link[0].boll.DN / k_link[0].min * 100)
     }
-    if ((k_link[0].boll.MB + 2 * k_link[0].boll.DN) / 3 > k_link[0].js) {
-        if (!flag) {
-            consoles.log('++++++++1')
-            // nub += 5;
-            return 0
-        }
-        consoles.log('++++++++2')
-        nub += 1;
-    }
-    consoles.log('------5')
     return nub;
   }
   // 量比记分
   function volumeFun(k_link, type) {
     // 量比加分
     if (!(k_link[0] && k_link[1] && k_link[0].volume && k_link[1].volume)) return 0;
-    let numner = k_link[0].volume / k_link[1].volume * 2
-    if (k_link[0] && k_link[1] && k_link[0].mean30 > k_link[0].mean30) numner += 3;
+    let numner = k_link[0].volume / k_link[1].volume * 10
+    if (k_link[0] && k_link[1] && k_link[0].mean30 > k_link[0].mean30) numner += 10;
     return numner;
   }
 
@@ -529,23 +498,13 @@ Array.prototype.min = function () {
   }
   // 追涨记分
   function goUp(k_link) {
-    if (!(k_link[0] && k_link[1] && k_link[0].volume && k_link[0].volume > k_link[1].volume)) return 0;
+    if (!(k_link[0] 
+        && k_link[1] 
+        && k_link[0].ks > k_link[0].js)) return 0;
     let numner = 0;
-    for (let i = 0, flag = 0; flag < 2 && i < k_link.length && i <= 30; i++) {
-        if (flag === 0 && i < 3) {
-            if (k_link[i] && k_link[i+1] && k_link[i].max - k_link[i+1].max >= 0) {
-                numner = numner + 3
-            } else {
-                flag++
-            }
-        } else if (flag === 1) {
-            if (k_link[i] && k_link[i+1] && k_link[i].min - k_link[i+1].min < 0) {
-                numner = numner + 1
-            } else {
-                flag = 2
-            }
-        } else {
-            flag = 2
+    for (let i = 0, flag = 0; flag < 1 && i < k_link.length && i <= 30; i++) {
+        if (k_link[i]) {
+
         }
     }
     
@@ -596,43 +555,34 @@ Array.prototype.min = function () {
   }
   // MACD 0
   function macdNull (k_link) {
-      if (!(k_link[0] && k_link[0].status > 0)) return 0;
-    let nub = 100;
-    // if (k_link[0] && k_link[1] && k_link[2] && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD) {
-    //     if (k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR) {
-    //         nub += 20;
-    //     } else {
-    //         return 0
-    //     }
-    //     let meanNub = 0;
-    //     let i=0;
-    //     for (;i < k_link.length && i < 5; i++) {
-    //         meanNub += k_link[i].max / k_link[i].min - 1;
-    //     }
-    //     nub += meanNub / (i-1);
-    //     nub -= k_link[0].MACD.EMA_BAR > 0 ? k_link[0].MACD.EMA_BAR * 100 : k_link[0].MACD.EMA_BAR * (-100);
-    // }
-    let sum = [];
-    k_link.forEach(item => {
-        if (item.MACD) {
-            sum.push(item.MACD.EMA_BAR)
-        }
-    })
-    // sum = k_link[0].MACD.EMA_BAR - (sum.sum() - 0.05)
-    sum = k_link[0].MACD.EMA_BAR
-    nub = 100 - (sum > 0 ? sum : sum * -1) * 100
-      return nub < 0 ? 0 : nub;
+    if (!(k_link[0] 
+        && k_link[1]
+        && k_link[0].MACD && k_link[1].MACD && k_link[2].MACD
+        && k_link[0].MACD.EMA_BAR > k_link[1].MACD.EMA_BAR
+        && k_link[1].MACD.EMA_BAR < k_link[2].MACD.EMA_BAR
+        && k_link[0].mean30 > k_link[1].mean30
+    )) return 0;
+    let nub = 100 - k_link[0].KDJ.J
+    return nub < 0 ? 0 : nub;
   }
   // kdj JKD
   function kdjUp (k_link) {
     let nub = 0;
     if (k_link[0] && k_link[1] && k_link[0].KDJ && k_link[1].KDJ && k_link[0].KDJ.J && k_link[1].KDJ.J) {
-        if (k_link[0].KDJ.K > 50 ||
-            k_link[0].KDJ.J < k_link[1].KDJ.J || 
-            k_link[0].status < 0) return 0;
-        
+        if (k_link[0].KDJ.K > 50
+            || k_link[0].mean30 < k_link[1].mean30
+            || k_link[0].KDJ.J < k_link[1].KDJ.J
+            || k_link[0].volume < k_link[1].volume
+        ) return 0;
         nub += 100;
-        let sum = k_link[0].KDJ.J + k_link[0].KDJ.D + k_link[0].KDJ.K
+        let up = 0
+        for(let i = 0;i < 3; i++) {
+            if (k_link[i] && k_link[i+1] && k_link[i].js > k_link[i+1].js) {
+                up++
+            }
+        }
+        // if (up > 2) return 0;
+        let sum = (k_link[0].KDJ.J + k_link[0].KDJ.D + k_link[0].KDJ.K) / 3
         let J = sum - k_link[0].KDJ.J
         let D = sum - k_link[0].KDJ.D
         let K = sum - k_link[0].KDJ.K
@@ -644,26 +594,38 @@ Array.prototype.min = function () {
   }
   function NeedeDip (k_link) {
     let nub = 0;
-    let [js,ks,max,min] = [[],[],[],[]];
-    k_link.forEach((item, i) => {
-        js.push(item.js);
-        ks.push(item.ks);
-        max.push(item.max);
-        min.push(item.min);
-    });
-    let minNmb = min.min().nub;
-    if (!k_link[minNmb + 1] || !k_link[minNmb + 2] || !k_link[minNmb + 3]) return 0;
-    if (k_link[minNmb + 1].status > 0 && k_link[minNmb + 2].status > 0 && k_link[minNmb + 3].status > 0) {
-        nub = nub + 10;
-    } else {
+    if (k_link[0] && k_link[0].boll.MB < k_link[0].max) {
         return 0
     }
-    if (minNmb < 4) {
-        nub = nub + 10;
+    console.log('min', k_link[0].min, k_link[1].min)
+    if (k_link[0] &&
+        k_link[0].status < 0 &&
+        k_link[1].status < 0 &&
+        k_link[0].min > k_link[1].min
+    ) {
+        return 1
+        // let a = bfb(k_link[1].min, k_link[2].js) - bfb(k_link[1].js, k_link[2].js)
+        // nub += a * -1
+        // console.log('--1', nub)
+        // if (a < -2) {
+        //     let b = 0
+        //     let c = 0
+        //     for(let i=0, flag=true;i<k_link.length && flag; i++) {
+        //         if (k_link[i] && k_link[i+1] && k_link[i].MACD && k_link[i+1].MACD && k_link[i].MACD.EMA_BAR < k_link[i+1].MACD.EMA_BAR) {
+        //             if (k_link[i].MACD.EMA_BAR < 0) {
+        //                 b++
+        //             } else {
+        //                 c++
+        //             }
+        //         }
+        //     }
+        //     nub += b < c ? b : c;
+        //     console.log('--2', nub)
+        //     let e = b < c ? c-b : b-c;
+        //     nub -= e
+        // }
     }
-    if (k_link[0].status < 0) {
-        nub = nub + 10;
-    }
+    console.log('--3', nub)
     return nub
   }
   // 发送邮件

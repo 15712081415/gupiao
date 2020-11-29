@@ -39,8 +39,8 @@ module.exports = function (code, flag, $) {
         let nub = Number(temp4);
         
         // 随机数
-        // let nubs = nub - nub * 0.9
-        // nub = nub - nubs + (nubs * Math.random() * 2)
+    //    let nubs = nub - nub * 0.9
+    //     nub = (nub * 0.9) + (nubs * Math.random() * 2)
         
         console.log('stup '+code+' ->', flag, Number(nub))  
 
@@ -60,15 +60,24 @@ module.exports = function (code, flag, $) {
         };
         $.timeRQ = temp7;
         let currEnt = parseInt((nub - temp3) / temp3 * 10000) / 100;
-        console.log(code + '检测行情6', currEnt + '%');
+        console.log(code + '检测行情6', currEnt + '%', $.flagCode[code]);
         if (!$.openVal[code]) $.openVal[code] = {v:temp3, s: currEnt};
-        if (nub > 0 && !$.timeSJ[code + temp7 + temp8]) {
-          $.timeSJ[code + temp7 + temp8] = true
-          $.https.post('http://127.0.0.1:9999/HamstrerServlet/stockAll/add', str).then(function (message) {
-            //   console.log(code + ':存储最新价格' + nub.toFixed(2) + '!');
-          }).catch(function (err) {
-              console.log(err);
-          });
+        if ($.codeData[code] && 
+            $.codeData[code]['K-Lin'] &&
+            $.codeData[code]['K-Lin'][0] &&
+            $.codeData[code]['K-Lin'][1] &&
+            $.codeData[code]['K-Lin'][2] &&
+            $.codeData[code]['K-Lin'][0]['MACD']['EMA_BAR'] < $.codeData[code]['K-Lin'][1]['MACD']['EMA_BAR'] &&
+            $.codeData[code]['K-Lin'][1]['MACD']['EMA_BAR'] > $.codeData[code]['K-Lin'][2]['MACD']['EMA_BAR']
+        ) {
+            if (!$.flagCode[code]) {
+                $.flagCode[code] = true;
+                let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span><p>检测行情跌势'+ currEnt +'% 暂停交易</p>';
+                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: '清仓'});
+                emailGet(null, $.codeData[code].name + '[' + code + ']:清仓', nubMon);
+                $.codeData[code].currLength > 0 && $.https.post('http://127.0.0.1:9999/HamstrerServlet/stock/edit',{"where":{"codeID":code},"setter":{"curr": $.Sday[code][0],"currLength": 0}});
+            }
+            return
         }
         
         nub > 0 && !$.flagCode[code] && calculatingData(code, temp1);
@@ -87,8 +96,8 @@ module.exports = function (code, flag, $) {
           let minSum = (item.curr || $.openVal[code].v) * 0.98;
           let nubMon = '<br /><span style="color: #0D5F97;font-size: 28px;">代码：' + code.substring(2, 8) + '</span>';
           let toEmail = null;
-        //   console.log(code + ':分析价格!', newest,max.max, maxSum + '<' + (max.max * 0.996), min.min,minSum + '>' + (min.min * 1.004))
-        //   console.log('maxSum:', maxSum, 'minSum:', minSum);
+          console.log(code + ':分析价格!', newest)
+          console.log('maxSum:', maxSum, 'minSum:', minSum);
           if (newest > (maxSum || ($.Sday[code][0] * 1.02))) {
                 console.log(code + ':分析价格! +++')
                   item.curr = $.Sday[code][lengths].toFixed(2);
@@ -108,6 +117,7 @@ module.exports = function (code, flag, $) {
         if (type == '+') {
             if (item.currLength < buy.length) {
                 $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: buy[item.currLength]});
+                console.log(code, buy[item.currLength])
                 let nub = item.currLength + 1
                 if (nub < buy.length) {
                     item.currLength = nub
@@ -121,7 +131,8 @@ module.exports = function (code, flag, $) {
                 let nub = item.currLength - 1
                 item.currLength = nub
                 item.ztLength = item.ztLength - 1
-                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[item.ztLength]});              
+                $.io.sockets.emit('news',{content: '代码：' + code.substring(2, 8), title: sell[item.ztLength]});
+                console.log(code, sell[item.ztLength])              
             } else {
                 console.log('无可卖')
             }
